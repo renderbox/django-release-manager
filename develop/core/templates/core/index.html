@@ -1,0 +1,21 @@
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block head_title %}Welcome{% endblock head_title %}
+
+{% comment %} {% block extra_css %}
+	<link href="{% static 'css/landing.css' %}" rel="stylesheet" type="text/css" />
+{% endblock extra_css %} {% endcomment %}
+
+{% block content %}
+	<div class="row cell bg-secondary text-light d-flex flex-column justify-content-around">
+		
+		<h2>Release Manager</h2>
+		<hr>
+		<h3>A Release Manager for Embedded Apps in your website, such as an SPA.</h3>
+		
+	</div>
+{% endblock content %}
+
+

@@ -1,0 +1,3 @@
+# Installation
+
+[Index](../index.md)

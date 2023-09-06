@@ -1,0 +1,65 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.distutils.bdist_wheel]
+universal = true
+
+[project]
+name = "django-release-manager"
+version = "0.1.0"
+
+authors = [
+  { name="Grant Viklund", email="renderbox@gmail.com" }
+]
+description = "A Release Manager for Embedded Apps in your website, such as an SPA."
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3 :: Only",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+keywords = ["django", "app"]
+dependencies = [
+    "Django>=3.0,<4.2",
+    "djangorestframework",
+    "django-cors-headers",
+]
+
+[project.optional-dependencies]
+dev = [
+    "django-crispy-forms",
+    "crispy-bootstrap5",
+    "django-allauth",
+    "django-extensions",
+    "black",
+    "flake8",
+    "flake8-black",
+    "mypy",
+    "bandit",
+    "isort",
+    "toml",
+]
+test = ["coverage"]
+docs = [
+    "django_extensions",
+    "coverage",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/renderbox/django-release-manager/"
+"Bug Tracker" = "https://github.com/renderbox/django-release-manager//issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+# Since templates are not in a Python Module, you need to specify them to be included.
+[tool.setuptools.package-data]
+releasemanager = ["templates/releasemanager/*.html"]
+
+[tool.djlint]
+blank_line_after_tag="load,extends,include"
+blank_line_before_tag="block"
