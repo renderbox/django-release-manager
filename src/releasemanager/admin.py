@@ -20,7 +20,7 @@ class ReleaseInline(admin.TabularInline):
 
 
 class ReleaseAdmin(admin.ModelAdmin):
-    # list_display = ("package", "version", "release_date", "state")
+    list_display = ("package", "version", "release_date", "state")
     # list_filter = ("package", "release_date")
     search_fields = ("package__name", "version")
     # filter_horizontal = ("groups",)
