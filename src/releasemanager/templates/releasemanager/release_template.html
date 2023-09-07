@@ -1,7 +1,6 @@
-{% for file_type, file in files %}
-{% if file_type == "css"%}
-<link></link>
-{% elif file_type == "js"%}
-<link></link>
-{% endif %}
-{% endfor %}
+{% for file_obj in files %}
+{% if file_obj.file_type == "css"%}
+<link rel="stylesheet" href="{{file_obj.path}}"{% if file_obj.integrity %} integrity="{{file_obj.integrity}}"{% endif %}{% if file_obj.crossorigin %} crossorigin="{{file_obj.crossorigin}}"{% endif %}/>
+{% elif file_obj.file_type == "js"%}
+<script src="{{file_obj.path}}"{% if file_obj.integrity %} integrity="{{file_obj.integrity}}"{% endif %}{% if file_obj.crossorigin  %} crossorigin="{{file_obj.crossorigin}}"{% endif %}></script>
+{% endif %} {% endfor %}

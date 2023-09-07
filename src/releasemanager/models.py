@@ -2,7 +2,8 @@
 
 from django.conf import settings
 from django.db import models
-from django.utils.translation import gettext as _
+
+# from django.utils.translation import gettext as _
 
 from django.contrib.sites.models import Site
 
@@ -10,7 +11,7 @@ from django.contrib.sites.models import Site
 class Package(models.Model):
     name = models.CharField(max_length=100, unique=True)
     package_key = models.CharField(max_length=100, unique=True)
-    description = models.TextField()
+    description = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -21,14 +22,14 @@ class Package(models.Model):
 class ReleaseState(models.Model):
     name = models.CharField(max_length=100)
     release_state_key = models.CharField(max_length=100, unique=True)
-    description = models.TextField()
+    description = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return self.name
 
 
 def default_release_paths():
-    return dict({"css": [], "js": []})
+    return dict([{"file_type": "css"}, {"file_type": "js"}])
 
 
 class Release(models.Model):
@@ -70,7 +71,7 @@ class ReleaseGroup(models.Model):
         settings.AUTH_USER_MODEL, related_name="release_groups"
     )
     release_state = models.ForeignKey(ReleaseState, on_delete=models.CASCADE)
-    sites = models.ManyToManyField(Site, related_name="releases", blank=True, null=True)
+    sites = models.ManyToManyField(Site, related_name="releases")
     # If no sites are specified, the group is applicable on all sites
 
     def __str__(self):

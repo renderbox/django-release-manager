@@ -5,8 +5,8 @@ from django.utils import timezone
 register = template.Library()
 
 
-@register.inclusion_tag("release_template.html")
-def render_release_template(package_key, release_state=None, parts=None):
+@register.inclusion_tag("releasemanager/release_template.html")
+def release_packages(package_key, release_state=None, file_types=None):
     # Tag Inputs
     # - Package key
     # - Release State (optional) - Lock the rendering to only the release state specified (like '1' -> production),
@@ -25,8 +25,9 @@ def render_release_template(package_key, release_state=None, parts=None):
     # )  # Assuming 'files' is a JSON field containing file information
     # return {"files": files}
 
-    if parts:
-        parts = parts.split(",")
+    if file_types:
+        file_types = file_types.split(",")
+        # Convert the comma seperated string into a list
 
     try:
         package = Package.objects.get(package_key=package_key)
@@ -43,23 +44,22 @@ def render_release_template(package_key, release_state=None, parts=None):
         )
 
         # Optionally filter by release state
-        if release_state is not None:
-            release = release.filter(
-                state=int(release_state)
-            )  # This needs to come from the model
+        if release_state:
+            # This needs to come from the model
+            release = release.filter(state=int(release_state)).first()
         else:
-            release = release.filter(state=Release.PRODUCTION)
+            release = release.filter(state=1).first()
+            # The assumption is that 1 is the production state, need to move this to the settings
+
+        if not release:
+            return {"files": []}
 
         # Optionally filter the release files by parts
-        if parts is not None:
-            filtered_files = {}
-            for part in parts:
-                if part in release.files:
-                    filtered_files[part] = release.files[part]
-            files = filtered_files
+        if file_types is not None:
+            files = [f for f in release.files if f["file_type"] in file_types]
         else:
             files = release.files  # Use all files if 'parts' is not specified
 
         return {"files": files}
-    except Package.DoesNotExist:
-        return {"files": {}}
+    except (Package.DoesNotExist, Release.DoesNotExist):
+        return {"files": []}
