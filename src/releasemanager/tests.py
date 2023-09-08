@@ -4,52 +4,14 @@ from django.contrib.sites.models import Site
 from .models import Package, ReleaseGroup, Release
 from datetime import datetime, timedelta
 
+"""
+# Data Dump
+./manage.py dumpdata --indent=4 -e contenttypes.contenttype -e admin -e sessions -e auth.permission -e core.releasemanageruser > ../src/releasemanager/fixtures/release_data.json
+"""
+
 
 class ReleaseGroupTestCase(TestCase):
-    fixtures = ["release_data.json"]
-
-    # def setUp(self):
-    #     User = get_user_model()
-
-    #     # Create a user
-    #     self.user = User.objects.create_user(
-    #         username="testuser", password="testpassword"
-    #     )
-
-    #     # Create a site
-    #     self.site = Site.objects.create(name="Test Site", domain="test.com")
-
-    #     # Create a package
-    #     self.package = Package.objects.create(
-    #         name="Test Package", package_key="test_package"
-    #     )
-
-    #     # Create a release group
-    #     self.release_group = ReleaseGroup.objects.create(
-    #         name="Test Release Group",
-    #         description="Test description",
-    #         active=True,
-    #         release_state=self.release_state,
-    #     )
-    #     self.release_group.members.add(self.user)
-    #     self.release_group.sites.add(self.site)
-    #     self.release_group.packages.add(self.package)
-
-    #     # Create a past release for the package
-    #     self.past_release = Release.objects.create(
-    #         version="1.0",
-    #         release_date=datetime.now() - timedelta(days=7),
-    #         package=self.package,
-    #         state=self.release_state,
-    #     )
-
-    #     # Create a future release for the package
-    #     self.future_release = Release.objects.create(
-    #         version="2.0",
-    #         release_date=datetime.now() + timedelta(days=7),
-    #         package=self.package,
-    #         state=self.release_state,
-    #     )
+    fixtures = ["sample_user.json", "release_data.json"]
 
     # def test_latest_release_in_release_group(self):
     #     # Get the latest release for the package in the user's release group

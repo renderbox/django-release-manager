@@ -1,0 +1,109 @@
+[
+{
+    "model": "sites.site",
+    "pk": 1,
+    "fields": {
+        "domain": "example.com",
+        "name": "example.com"
+    }
+},
+{
+    "model": "releasemanager.package",
+    "pk": 1,
+    "fields": {
+        "name": "Sample App",
+        "package_key": "sample_app",
+        "description": "",
+        "created_at": "2023-09-07T19:06:11.014Z",
+        "updated_at": "2023-09-08T15:54:04.903Z"
+    }
+},
+{
+    "model": "releasemanager.release",
+    "pk": 1,
+    "fields": {
+        "approved": true,
+        "version": "v0.1.0",
+        "release_date": "2023-09-07T19:06:25Z",
+        "package": 1,
+        "files": [
+            {
+                "file_type": "css",
+                "path": "/static/css/v0.1.0/main.css"
+            },
+            {
+                "file_type": "js",
+                "path": "/static/js/v0.1.0/main.js",
+                "options": {
+                    "integrity": "yes,lots"
+                }
+            }
+        ]
+    }
+},
+{
+    "model": "releasemanager.release",
+    "pk": 2,
+    "fields": {
+        "approved": false,
+        "version": "v3.0.0",
+        "release_date": "2025-03-22T14:03:55Z",
+        "package": 1,
+        "files": [
+            {
+                "file_type": "css",
+                "path": "/static/css/v3.0.0/main.css"
+            },
+            {
+                "file_type": "js",
+                "path": "/static/js/v3.0.0/main.js",
+                "options": {
+                    "integrity": "futureisbright!"
+                }
+            }
+        ]
+    }
+},
+{
+    "model": "releasemanager.release",
+    "pk": 3,
+    "fields": {
+        "approved": false,
+        "version": "v0.1.1",
+        "release_date": "2023-09-08T15:53:51Z",
+        "package": 1,
+        "files": [
+            {
+                "file_type": "css",
+                "path": "/static/css/v0.1.1/main.css"
+            },
+            {
+                "file_type": "js",
+                "path": "/static/js/v0.1.1/main.js",
+                "options": {
+                    "integrity": "yes,lots"
+                }
+            }
+        ]
+    }
+},
+{
+    "model": "releasemanager.releasegroup",
+    "pk": 1,
+    "fields": {
+        "name": "Sample App Beta",
+        "description": "Beta Testers across all sites.",
+        "active": true,
+        "members": [
+            1
+        ],
+        "sites": [
+            1
+        ],
+        "releases": [
+            3,
+            1
+        ]
+    }
+}
+]
