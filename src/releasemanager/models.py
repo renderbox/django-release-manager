@@ -34,7 +34,7 @@ class ReleaseManager(models.Manager):
                 & Q(release_groups__active=True)
             )
             | (
-                Q(release_date__lte=current_datetime) & Q(approved=True)
+                Q(release_date__lte=current_datetime) & Q(active=True)
             ),  # Get the latest published release, currently assumes default is ID 1 unless set in settings
         ).order_by("-release_date")
 
@@ -57,8 +57,8 @@ def default_release_paths():
 
 
 class Release(models.Model):
-    approved = models.BooleanField(
-        default=False, help_text="Is this release approved for production?"
+    active = models.BooleanField(
+        default=False, help_text="Is this release active for production?"
     )
     version = models.CharField(max_length=20)
     release_date = models.DateTimeField()
@@ -71,8 +71,6 @@ class Release(models.Model):
         help_text="Nested type information for this release",
         default=default_release_paths,
     )
-
-    # state = models.ForeignKey(ReleaseState, on_delete=models.CASCADE)
 
     objects = ReleaseManager()
 
@@ -102,10 +100,6 @@ class ReleaseGroup(models.Model):
     releases = models.ManyToManyField(
         Release, related_name="release_groups", blank=True
     )
-
-    # class Meta:
-    #     ordering = ["-release_date"]
-    #     unique_together = (("releases__package", "releases"),)    # TODO: find a way to make there be only one release per package available
 
     def __str__(self):
         return self.name
