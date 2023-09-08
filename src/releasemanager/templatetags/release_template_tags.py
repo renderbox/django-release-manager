@@ -19,6 +19,8 @@ def release_packages(package_key, release_state=None, file_types=None):
     # # get the latest release based on the newest release marked as PRODUCTION
     # release = Release.objects.filter(state=Release.PRODUCTION).first()
 
+    # [{file_type: "css", path:"/static/css/v0.1.0/main.css"}, {file_type:"js", path:"/static/js/v0.1.0/main.js"}]
+
     # # Process the 'files' field and return context to be used in the template
     # files = (
     #     release.files
