@@ -24,66 +24,17 @@ class ReleaseManager(models.Manager):
 
         default_id = getattr(settings, "RELEASE_MANAGER_DEFAULT_STATE", 1)
 
-        # package = Package.objects.get(package_key=package_key)
         current_site = Site.objects.get_current()
-        # current_datetime = timezone.now()
-
-        # # active_release_groups = user.release_groups.filter(
-        # #     sites=current_site, active=True
-        # # )
-
-        # # Get the latest available releasese in the active release groups
-
-        # # 1) Get the current user's active release groups for the current site
-
-        # # based on the provided package, get the latest release for the package that is in the user's release groups, including future release dates
-
-        # release = (
-        #     Release.objects.filter(
-        #         package__release_groups__members=user,  # the release is in the user's release groups
-        #         package__release_groups__sites=current_site,
-        #         package__release_groups__active=True,  # Active release group
-        #         # release_date__lte=current_datetime,  # Release date is in the past or now
-        #     )
-        #     .order_by("-release_date")
-        #     .first()
-        # )
-
-        # # 2) If the user has a release group, get the latest release for the package that is in the user's release groups, including future release dates
-
-        # if not release:
-        #     # 3) If the user is not in a release group, get the latest release for the package (DEFAULT)
-        #     # DEFAULT: Retrieve the latest default release for the specified package and ignore future release dates
-        #     release = (
-        #         Release.objects.filter(
-        #             package=package,
-        #             release_date__lte=current_datetime,
-        #             state=1,
-        #         )
-        #         .order_by("-release_date")
-        #         .first()
-        #     )
-
-        # Search for the package releases
-        # check that the package is in the user's release groups
-        #
-
-        # filters = (Q(package=package), (Q(package__release_groups__members=user)))  # Filter the package
-
-        # Q(package__release_groups__members=user)
-        # | (Q(release_date__lte=current_datetime) & Q(state__release_state_id=1)),
-        #     | Q(release_date__gt=current_datetime)
-        # )
 
         latest_release = self.filter(
             Q(package=package),  # Filter the package
             (
-                Q(package__release_groups__members=user)
-                & Q(package__release_groups__sites=current_site)
-                & Q(package__release_groups__active=True)
+                Q(release_groups__members=user)
+                & Q(release_groups__sites=current_site)
+                & Q(release_groups__active=True)
             )
             | (
-                Q(release_date__lte=current_datetime) & Q(state__id=default_id)
+                Q(release_date__lte=current_datetime) & Q(approved=True)
             ),  # Get the latest published release, currently assumes default is ID 1 unless set in settings
         ).order_by("-release_date")
 
@@ -101,20 +52,14 @@ class Package(models.Model):
         return self.name
 
 
-class ReleaseState(models.Model):
-    name = models.CharField(max_length=100)
-    release_state_key = models.CharField(max_length=100, unique=True)
-    description = models.TextField(blank=True, null=True)
-
-    def __str__(self):
-        return self.name
-
-
 def default_release_paths():
     return list([{"file_type": "css"}, {"file_type": "js"}])
 
 
 class Release(models.Model):
+    approved = models.BooleanField(
+        default=False, help_text="Is this release approved for production?"
+    )
     version = models.CharField(max_length=20)
     release_date = models.DateTimeField()
     package = models.ForeignKey(
@@ -126,7 +71,8 @@ class Release(models.Model):
         help_text="Nested type information for this release",
         default=default_release_paths,
     )
-    state = models.ForeignKey(ReleaseState, on_delete=models.CASCADE)
+
+    # state = models.ForeignKey(ReleaseState, on_delete=models.CASCADE)
 
     objects = ReleaseManager()
 
@@ -152,10 +98,14 @@ class ReleaseGroup(models.Model):
         settings.AUTH_USER_MODEL, related_name="release_groups", blank=True
     )
     active = models.BooleanField(default=False)
-    release_state = models.ForeignKey(ReleaseState, on_delete=models.CASCADE)
     sites = models.ManyToManyField(Site, related_name="releases", blank=True)
-    packages = models.ManyToManyField(Package, related_name="release_groups")
-    # If no sites are specified, the group is applicable on all sites
+    releases = models.ManyToManyField(
+        Release, related_name="release_groups", blank=True
+    )
+
+    # class Meta:
+    #     ordering = ["-release_date"]
+    #     unique_together = (("releases__package", "releases"),)    # TODO: find a way to make there be only one release per package available
 
     def __str__(self):
         return self.name

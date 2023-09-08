@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 # from .models import ReleaseGroup, Release, Package
-from .models import Release, Package, ReleaseState, ReleaseGroup
+from .models import Release, Package, ReleaseGroup
 
 
 # Inlines
@@ -21,12 +21,8 @@ class ReleaseGroupAdmin(admin.ModelAdmin):
     filter_horizontal = ("members",)
 
 
-class ReleaseStateAdmin(admin.ModelAdmin):
-    list_display = ("name", "release_state_key", "description")
-
-
 class ReleaseAdmin(admin.ModelAdmin):
-    list_display = ("package", "version", "release_date", "state")
+    list_display = ("package", "version", "release_date", "approved")
     search_fields = ("package__name", "version")
 
 
@@ -40,4 +36,3 @@ class PackageAdmin(admin.ModelAdmin):
 admin.site.register(ReleaseGroup, ReleaseGroupAdmin)
 admin.site.register(Release, ReleaseAdmin)
 admin.site.register(Package, PackageAdmin)
-admin.site.register(ReleaseState, ReleaseStateAdmin)
