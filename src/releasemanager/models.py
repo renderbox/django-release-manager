@@ -22,7 +22,7 @@ class ReleaseManager(models.Manager):
 
         current_datetime = timezone.now()
 
-        default_id = getattr(settings.RELEASE_MANAGER_DEFAULT_STATE, 1)
+        default_id = getattr(settings, "RELEASE_MANAGER_DEFAULT_STATE", 1)
 
         # package = Package.objects.get(package_key=package_key)
         current_site = Site.objects.get_current()
@@ -75,17 +75,17 @@ class ReleaseManager(models.Manager):
         #     | Q(release_date__gt=current_datetime)
         # )
 
-        # TODO: Query for results based on the user's release groups
-
-        # DEFAULT: Retrieve the latest default ("production") release for the specified package and ignore future release dates
         latest_release = self.filter(
             Q(package=package),  # Filter the package
             (
+                Q(package__release_groups__members=user)
+                & Q(package__release_groups__sites=current_site)
+                & Q(package__release_groups__active=True)
+            )
+            | (
                 Q(release_date__lte=current_datetime) & Q(state__id=default_id)
             ),  # Get the latest published release, currently assumes default is ID 1 unless set in settings
         ).order_by("-release_date")
-
-        # If there is no release, return the default release
 
         return latest_release
 
