@@ -29,7 +29,7 @@ class ReleaseState(models.Model):
 
 
 def default_release_paths():
-    return dict([{"file_type": "css"}, {"file_type": "js"}])
+    return list([{"file_type": "css"}, {"file_type": "js"}])
 
 
 class Release(models.Model):
@@ -62,6 +62,8 @@ class Release(models.Model):
 
 class ReleaseGroup(models.Model):
     """
+    If a user is part of a Release Group, the newest release will be available for a given Package.
+
     If a user is not part of a group, they always get the latest release.
     """
 
@@ -70,6 +72,7 @@ class ReleaseGroup(models.Model):
     members = models.ManyToManyField(
         settings.AUTH_USER_MODEL, related_name="release_groups"
     )
+    active = models.BooleanField(default=False)
     release_state = models.ForeignKey(ReleaseState, on_delete=models.CASCADE)
     sites = models.ManyToManyField(Site, related_name="releases")
     # If no sites are specified, the group is applicable on all sites

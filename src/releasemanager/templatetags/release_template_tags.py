@@ -38,14 +38,11 @@ def release_packages(package_key, release_state=None, file_types=None):
 
         # If the user's group has a release newer than the current production release, use that release instead
 
-        # DEFAULT: Retrieve the latest release for the specified package
-        # current_date = timezone.now().date()
-        # release = Release.objects.filter(
-        #     package=package,
-        #     release_date__lte=current_date,
-        # )
+        # DEFAULT: Retrieve the latest release for the specified package and ignore future release dates
+        current_date = timezone.now()
         release = Release.objects.filter(
             package=package,
+            release_date__lte=current_date,
         )
 
         # Optionally filter by release state

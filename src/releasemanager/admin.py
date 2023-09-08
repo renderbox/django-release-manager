@@ -4,6 +4,18 @@ from django.contrib import admin
 from .models import Release, Package, ReleaseState, ReleaseGroup
 
 
+# Inlines
+
+
+class ReleaseInline(admin.TabularInline):
+    # You can use admin.StackedInline for a different display style
+    model = Release
+    extra = 1  # Number of empty forms to display for adding new releases
+
+
+# Admins
+
+
 class ReleaseGroupAdmin(admin.ModelAdmin):
     list_display = ("name", "description")
     filter_horizontal = ("members",)
@@ -13,17 +25,9 @@ class ReleaseStateAdmin(admin.ModelAdmin):
     list_display = ("name", "release_state_key", "description")
 
 
-class ReleaseInline(admin.TabularInline):
-    # You can use admin.StackedInline for a different display style
-    model = Release
-    extra = 1  # Number of empty forms to display for adding new releases
-
-
 class ReleaseAdmin(admin.ModelAdmin):
     list_display = ("package", "version", "release_date", "state")
-    # list_filter = ("package", "release_date")
     search_fields = ("package__name", "version")
-    # filter_horizontal = ("groups",)
 
 
 class PackageAdmin(admin.ModelAdmin):

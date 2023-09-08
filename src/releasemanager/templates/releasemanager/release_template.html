@@ -1,6 +1,14 @@
-{% for file_obj in files %}
-{% if file_obj.file_type == "css"%}
-<link rel="stylesheet" href="{{file_obj.path}}"{% if file_obj.integrity %} integrity="{{file_obj.integrity}}"{% endif %}{% if file_obj.crossorigin %} crossorigin="{{file_obj.crossorigin}}"{% endif %}/>
-{% elif file_obj.file_type == "js"%}
-<script src="{{file_obj.path}}"{% if file_obj.integrity %} integrity="{{file_obj.integrity}}"{% endif %}{% if file_obj.crossorigin  %} crossorigin="{{file_obj.crossorigin}}"{% endif %}></script>
+{% for entry in files %}
+{% if entry.file_type == "css"%}
+<link rel="stylesheet" href="{{entry.path}}"{% if entry.options %}
+{% for key, value in entry.options.items %}
+  {{ key }}="{{ value }}"
+{% endfor %}
+{% endif %}/>
+{% elif entry.file_type == "js"%}
+<script src="{{entry.path}}"{% if entry.options %}
+{% for key, value in entry.options.items %}
+  {{ key }}="{{ value }}"
+{% endfor %}
+{% endif %}></script>
 {% endif %} {% endfor %}
