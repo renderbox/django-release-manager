@@ -10,9 +10,9 @@ It is particularly useful for cases where the front-end and back-end of your pro
 
 ## How to install
 
-To add the "django-release-manager" package to your Django project, they should follow these steps:
+To add the "django-release-manager" package to your Django project, follow these steps:
 
-1. **Activate the Virtual Environment (Optional)**: If they are using a virtual environment for their Django project (which is recommended), they should activate it. They can do this with the following command (the exact command may vary depending on their operating system and virtual environment tool):
+1. **Activate the Virtual Environment (Optional)**: If you are using a virtual environment for your Django project (which is recommended), you should activate it. You can do this with the following command (the exact command may vary depending on their operating system and virtual environment tool):
 
    For `venv` on Linux/macOS:
 
@@ -26,13 +26,7 @@ To add the "django-release-manager" package to your Django project, they should 
    \path\to\venv\Scripts\activate
    ```
 
-   For `conda`:
-
-   ```bash
-   conda activate myenv
-   ```
-
-2. **Install the Package**: They should use `pip` to install the "django-release-manager" package, as mentioned earlier:
+2. **Install the Package**: Use `pip` to install the "django-release-manager" package, as mentioned earlier:
 
    ```bash
    pip install django-release-manager
@@ -43,60 +37,82 @@ To add the "django-release-manager" package to your Django project, they should 
    ```python
    INSTALLED_APPS = [
        # ...
-       'releasemanager',  # Replace 'release_manager' with the actual app name
+       'releasemanager',
        # ...
    ]
    ```
 
-   Make sure to replace `'releasemanager'` with the actual name of the app provided by "django-release-manager."
+4. **Add the URLs to Django Project's urls.py** (optional): If you want to use the views and/or API from the release manager you will need to add the urls in the "django-release-manager" package to your project's urls.py. Feel free to name the base URL how you wish.
 
-4. **Run Migrations**: If the package includes database models or migrations, they should run the migrations to create the necessary database tables:
+   **_Views_**
+
+   ```python
+   urlpatterns = [
+      ...
+      path("releasemanager/", include("releasemanager.urls") ),
+      ...
+   ]
+   ```
+
+   **_API_**
+
+   ```python
+   urlpatterns = [
+      ...
+      path("api/releasemanager/", include("releasemanager.api.urls") ),
+      ...
+   ]
+   ```
+
+5. **Run Migrations**: Run the migrations to create the necessary database tables:
 
    ```bash
    python manage.py migrate
    ```
 
-5. **Start the Django Development Server**: They can start the Django development server to run their project with the newly added package:
+6. **Start the Django Development Server**: Run your project with the newly added package:
 
    ```bash
    python manage.py runserver
    ```
 
-   This command will start the development server, and they can access their Django project with the package's features through a web browser.
-
-By following these steps, you should be able to add the "django-release-manager" package to their Django project and use its functionality as needed.
-
 ## How to use
 
-This app stores information about your releases in the database and renderd them into your template with tags. You need to load the tags into your template at the top of the page and then you can use it anywhere you want. Here is an example of how this would work on a page.
+This app stores information about your releases in the database and renders the URL to the files into your template using tags. You need to include the tag library in your template at the top of the page and then you can use it anywhere you want. Here is an example of how this would work on a page.
 
-```
+Include this at the top of your template:
+
+```python
 {% load release_template_tags %}
+```
 
-...
+Now you can put this tag wherever is appropriate in your template:
 
+```python
 {% release_packages "sample_app" user=user file_types="js" %}
 ```
 
-In this example, there is an Package called 'sample_app' and we want to render the 'js' files. These are all set in the Admin panel on the Release Manager records and will start to make sense as we go through them.
+In this example, we are managing a Package called 'sample_app' and we want to render the 'js' files. Controls for which version of the script to include is set in the Admin panel on the Release Manager record. What the example above will do is find the latest release version of the package, "sample_app", and render a link for all the "js" files included in the package.
 
-> **Note:** There can only be one app specified per tag but there can be multiple file_types in a comman seperated list like: "js,css,img" for example.
+How this all works behind the scenes will be explained in the next steps.
+
+> **Note:** There can only be one package specified in a tag at a time but there can be multiple file_types in a comman seperated list like: "js,css,img" for example.
 
 ### Admin Interfaces
 
 #### Packages
 
-There are three Admin panels and a template tag included in the project. The first is defining your Packages. A Package is the main app you are building and all releases will be children of the Package. The Name is for Human readability and the Description is there for future use in rendered templates. However the most important value is the "Package key". This is the value used by the template tag to know what package to include where.
+There are three Admin panels and a template tag included in the project. The first is defining your Packages. A Package is the main app you are building and all releases will be children of the Package. The Name is for Human readability and the Description is there for future use in rendered templates. However the most important value is the "Package key". This is the value used by the template tag to know what package we are working with in that tag.
 
 #### Releases
 
-A release is a versioned set of files associated with the Package. Releases contain all the information that is needed to render them properly into a template.
+A release is a versioned collection of files associated with the Package. Releases contain all the information that is needed to render the urls into a template properly.
 
-- **Active**: Determines whether or not the release is available in production. Turning this on makes it availiable to all users on the site and will render it in everyone's session. The latest version that is active will be the default rendered version.
-- **Version**: This is arbitrary but required. It there for your own tracking so it can use whatever versioning scheme you see fit.
-- **Release date**: This, combined with the active state, determines what Release of the package to default to. The release who's active _and_ has the most recent release date (but not in the future) wins by default. A future data allows you to set a release time in the future to roll out a package so you can schedule it however you want.
+- **Active**: Boolean to say whether or not the release is available in production. Turning this on makes it availiable to all users on the site and will use it when rendering the template. The latest active version will be considered the current production version.
+- **Version**: This is arbitrary but required. It does not enforce a specific scheme so it's flexible to match whatever works on your project.
+- **Release date**: This, combined with the Active state, determines what Release of the package is considered the current production version. The release who's Active _and_ has the most recent release date (but not in the future) wins. Using a future date/time is helpful if you want to schedule the roll out os a package.
 - **Package**: Which package this release is for.
-- **Files**: Here is a JSON list of the files included in the release. In the example below you can see there is a "file_type", which defines which is used by the template tag above to determine which files to render in the tag at that time and the path to the file. Options are just that, a JSON object that contains optional fields to put in the tag. In this example there is an "integrity" attribute that will be added to the HTML with the associated value.
+- **Files**: A JSON formatted list of the files included in the release. These files will be rendered in the order they are included in in the list. In the example below you can see there is a "file_type", which is used by the tag to determine which files to include in the tag render. Options are a nested JSON object that contains optional "HTML tag" attributes to include when rendering the template tag. In this example the "js" file includes an "integrity" attribute that will be added to the HTML and assigned the associated value.
 
 ```json
 [
@@ -107,33 +123,37 @@ A release is a versioned set of files associated with the Package. Releases cont
 
 #### Release groups
 
-Release groups are used for controlling who has access to a particular version on a particular site. This is useful for creating Beta Test groups on your site so you can give them controlled access to that specific version.
+Release groups are used for giving specific users access to particular versions of a release. This is useful for creating Beta Test or Early Access groups on your site so you can give them controlled access to that specific version.
 
 - **Name**: There to help identify the release.
 - **Description**: A description of the group.
-- **Members**: Who on the site is in the group.
-- **Active**: whether or not the group is active. An inactive group is ignored by the template tag.
-- **Sites**: which sites the user will have access to the release on.
-- **Releases**: which releases the group has access to.
+- **Members**: Which users are in the group.
+- **Active**: Whether or not the group is active. An inactive group is ignored by the template tag.
+- **Sites**: Which sites this group is avaialble on.
+- **Releases**: Which release the group has access to.
 
-> **Note:** Of the seleted releases in the Releases, the one with the newest release date will be the one used. For that reason it's a good idea to make sure to only select one at a time.
+> **Note:** Of the seleted releases in the Releases, similar to the default behavior, the package with the newest release date will be used. For that reason it's a good idea to make sure to only select one at a time. Also the "Active" state of the release is ignored as this is used to determine which is the current active production release of the package.
 
 ## Advanced Usage
 
 ### Overriding the template
 
-It is possible to override the main tag template with your own. It is found in
+The template used be the tag is completely customizeable. It is found here:
 
 ```bash
 templates/releasemanager/release_template.html
 ```
 
-Take a look at what is there and if you want to add functionality or change formatting for your particular use, feel free.
+Take a look at what is there and if you want to add functionality or change formatting for your particular use, feel free. The version that comes with Django Release Manager assumes that the paths to the package files will be absolute paths so an example of customization might be to add Django's "{% static ... %}" tag to the template if you are keeping versions in the standard static location.
 
 ## TODOs
 
 This is still a works in progress but its completely useable currently.
 
+There are many things still to be done.
+
 - More Unit Testing
 - REST API
 - Support for A/B testing
+
+If there is a feature you want to request feel free to file an issue with the subject starting with "REQUEST: " or better yet, write it your self and make a pull request.
