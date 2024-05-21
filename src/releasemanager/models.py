@@ -126,7 +126,8 @@ class Release(models.Model):
         unique_together = (("package", "version"),)
 
     def __str__(self):
-        return f"{self.package.name} - {self.version}"
+        package_details = self.get_package_details()
+        return f"{package_details['name']} - {self.version}"
 
 
 # class Release(models.Model):
