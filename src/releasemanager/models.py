@@ -1,60 +1,44 @@
-# import uuid
-
 from django.conf import settings
 from django.db import models
-from django.db.models import Q
-from django.utils import timezone
-
-# from django.utils.translation import gettext as _
 
 # get User from the custom user model
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.contrib.sites.models import Site
+from django.contrib.sites.shortcuts import get_current_site
 
 User = get_user_model()
 
 
+class Status(models.TextChoices):
+    DEVELOPMENT = 1, "Development"
+    TESTING = 10, "Testing"
+    HOLD = 20, "Hold"
+    RELEASED = 30, "Released"
+    DEPRECATED = 40, "Deprecated"
+
+
 class ReleaseManager(models.Manager):
-    def get_latest_release_for_package_and_user(self, package, user):
-        """
-        Get the latest release for a specified package within the user's release groups.
-        """
+    def get_accessible_releases(self, user, package_key):
+        current_site = get_current_site(user.request)
+        queryset = self.get_queryset().filter(package=package_key, sites=current_site)
 
-        # if package is a string, get the package object
-        if isinstance(package, str):
-            package = Package.objects.get(package_key=package)
+        # Check if the user has specific permissions that grant them access to special versions
+        if user.has_perm("release.special_access"):
+            return queryset.order_by("-release_date")
 
-        current_datetime = timezone.now()
+        # Otherwise, filter the releases to those where the user's groups match
+        group_ids = user.groups.values_list("id", flat=True)
+        releases = queryset.filter(groups__id__in=group_ids).distinct()
 
-        # default_id = getattr(settings, "RELEASE_MANAGER_DEFAULT_STATE", 1)
+        if releases.exists():
+            return releases.order_by("-release_date")
 
-        current_site = Site.objects.get_current()
+        # If no group-specific or special permission releases are found, return the latest general release
+        return queryset.filter(status=Status.RELEASED).order_by("-release_date")
 
-        latest_release = self.filter(
-            Q(package=package),  # Filter the package
-            (
-                Q(release_groups__members=user)
-                & Q(release_groups__sites=current_site)
-                & Q(release_groups__active=True)
-            )
-            | (
-                Q(release_date__lte=current_datetime) & Q(active=True)
-            ),  # Get the latest published release, currently assumes default is ID 1 unless set in settings
-        ).order_by("-release_date")
-
-        return latest_release
-
-
-# class Package(models.Model):
-#     name = models.CharField(max_length=100, unique=True)
-#     package_key = models.CharField(max_length=100, unique=True)
-#     description = models.TextField(blank=True, null=True)
-#     created_at = models.DateTimeField(auto_now_add=True)
-#     updated_at = models.DateTimeField(auto_now=True)
-
-#     def __str__(self):
-#         return self.name
+    def get_accessible_release(self, user, package_key):
+        return self.get_accessible_releases(user, package_key).first()
 
 
 def default_release_paths():
@@ -62,19 +46,13 @@ def default_release_paths():
 
 
 class Release(models.Model):
-    STATUS_CHOICES = [
-        (1, "Development"),
-        (10, "Testing"),
-        (20, "Hold"),
-        (30, "Released"),
-        (40, "Deprecated"),
-    ]
-
     active = models.BooleanField(
         default=False, help_text="Is this release active for production?"
     )
     status = models.IntegerField(
-        choices=STATUS_CHOICES, default=1, help_text="Current status of the release"
+        choices=Status.choices,
+        default=Status.DEVELOPMENT,
+        help_text="Current status of the release",
     )
     version = models.CharField(max_length=20)
     release_date = models.DateTimeField()
@@ -96,7 +74,7 @@ class Release(models.Model):
     package = models.CharField(  # defined in the settings so that it can be changed without changing the application
         # and be immutable at runtime
         max_length=100,
-        choices=[(key, pkg["name"]) for key, pkg in settings.DRM_PACKAGES.items()],
+        choices=[(key, pkg["name"]) for key, pkg in settings.RM_PACKAGES.items()],
     )
     groups = models.ManyToManyField(
         Group, blank=True, help_text="User groups that can access this release"
@@ -119,42 +97,19 @@ class Release(models.Model):
 
     def get_package_details(self):
         """Retrieve the package details from settings based on the package identifier."""
-        return settings.DRM_PACKAGES.get(self.package)
+        return settings.RM_PACKAGES.get(self.package)
 
     class Meta:
         ordering = ["-release_date"]
         unique_together = (("package", "version"),)
+        permissions = [
+            ("can_view_development", "Can view development releases"),
+            ("can_view_testing", "Can view testing releases"),
+        ]
 
     def __str__(self):
         package_details = self.get_package_details()
         return f"{package_details['name']} - {self.version}"
-
-
-# class Release(models.Model):
-#     active = models.BooleanField(
-#         default=False, help_text="Is this release active for production?"
-#     )
-#     version = models.CharField(max_length=20)
-#     release_date = models.DateTimeField()
-#     package = models.ForeignKey(
-#         Package, on_delete=models.CASCADE, related_name="releases"
-#     )
-#     files = models.JSONField(
-#         blank=True,
-#         null=True,
-#         help_text="Nested type information for this release",
-#         default=default_release_paths,
-#     )
-
-#     objects = ReleaseManager()
-
-#     def __str__(self):
-#         return f"{self.package.name} - {self.version}"
-
-#     class Meta:
-#         ordering = ["-release_date"]
-#         unique_together = (("package", "version"),)
-#         # Makes sure there is only one entry of a given version per package
 
 
 """

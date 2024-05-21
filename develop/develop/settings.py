@@ -152,7 +152,8 @@ CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 
-DRM_PACKAGES = {
+# Django Release Manager Settings
+RM_PACKAGES = {
     "basic": {"name": "Basic", "description": "Basic package"},
     "advanced": {
         "name": "Advanced",
