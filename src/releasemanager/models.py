@@ -7,7 +7,12 @@ from django.utils import timezone
 
 # from django.utils.translation import gettext as _
 
+# get User from the custom user model
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 from django.contrib.sites.models import Site
+
+User = get_user_model()
 
 
 class ReleaseManager(models.Manager):
@@ -22,7 +27,7 @@ class ReleaseManager(models.Manager):
 
         current_datetime = timezone.now()
 
-        default_id = getattr(settings, "RELEASE_MANAGER_DEFAULT_STATE", 1)
+        # default_id = getattr(settings, "RELEASE_MANAGER_DEFAULT_STATE", 1)
 
         current_site = Site.objects.get_current()
 
@@ -41,15 +46,15 @@ class ReleaseManager(models.Manager):
         return latest_release
 
 
-class Package(models.Model):
-    name = models.CharField(max_length=100, unique=True)
-    package_key = models.CharField(max_length=100, unique=True)
-    description = models.TextField(blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+# class Package(models.Model):
+#     name = models.CharField(max_length=100, unique=True)
+#     package_key = models.CharField(max_length=100, unique=True)
+#     description = models.TextField(blank=True, null=True)
+#     created_at = models.DateTimeField(auto_now_add=True)
+#     updated_at = models.DateTimeField(auto_now=True)
 
-    def __str__(self):
-        return self.name
+#     def __str__(self):
+#         return self.name
 
 
 def default_release_paths():
@@ -57,52 +62,98 @@ def default_release_paths():
 
 
 class Release(models.Model):
+    STATUS_CHOICES = [
+        (1, "Development"),
+        (10, "Testing"),
+        (20, "Hold"),
+        (30, "Released"),
+        (40, "Deprecated"),
+    ]
+
     active = models.BooleanField(
         default=False, help_text="Is this release active for production?"
     )
+    status = models.IntegerField(
+        choices=STATUS_CHOICES, default=1, help_text="Current status of the release"
+    )
     version = models.CharField(max_length=20)
     release_date = models.DateTimeField()
-    package = models.ForeignKey(
-        Package, on_delete=models.CASCADE, related_name="releases"
+    deprecation_date = models.DateTimeField(
+        blank=True,
+        null=True,
+        help_text="When the release is scheduled to be deprecated",
+    )
+    released_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text="User who released the version",
+    )
+    release_notes = models.TextField(
+        blank=True, help_text="Detailed notes about what is new, changed, or fixed"
+    )
+    package = models.CharField(  # defined in the settings so that it can be changed without changing the application
+        # and be immutable at runtime
+        max_length=100,
+        choices=[(key, pkg["name"]) for key, pkg in settings.DRM_PACKAGES.items()],
+    )
+    groups = models.ManyToManyField(
+        Group, blank=True, help_text="User groups that can access this release"
+    )
+    sites = models.ManyToManyField(
+        Site, blank=True, help_text="Sites where this release is available"
     )
     files = models.JSONField(
         blank=True,
         null=True,
         help_text="Nested type information for this release",
-        default=default_release_paths,
+        default=default_release_paths,  # Assuming a callable that returns a default dictionary to use
+    )
+    signature = models.CharField(
+        max_length=256,
+        blank=True,
+        null=True,
+        help_text="Digital signature for release integrity",
     )
 
-    objects = ReleaseManager()
-
-    def __str__(self):
-        return f"{self.package.name} - {self.version}"
+    def get_package_details(self):
+        """Retrieve the package details from settings based on the package identifier."""
+        return settings.DRM_PACKAGES.get(self.package)
 
     class Meta:
         ordering = ["-release_date"]
         unique_together = (("package", "version"),)
-        # Makes sure there is only one entry of a given version per package
-
-
-class ReleaseGroup(models.Model):
-    """
-    If a user is part of a Release Group, the newest release will be available for a given Package.
-
-    If a user is not part of a group, they always get the latest release.
-    """
-
-    name = models.CharField(max_length=100, unique=True)
-    description = models.TextField(blank=True, null=True)
-    members = models.ManyToManyField(
-        settings.AUTH_USER_MODEL, related_name="release_groups", blank=True
-    )
-    active = models.BooleanField(default=False)
-    sites = models.ManyToManyField(Site, related_name="releases", blank=True)
-    releases = models.ManyToManyField(
-        Release, related_name="release_groups", blank=True
-    )
 
     def __str__(self):
-        return self.name
+        return f"{self.package.name} - {self.version}"
+
+
+# class Release(models.Model):
+#     active = models.BooleanField(
+#         default=False, help_text="Is this release active for production?"
+#     )
+#     version = models.CharField(max_length=20)
+#     release_date = models.DateTimeField()
+#     package = models.ForeignKey(
+#         Package, on_delete=models.CASCADE, related_name="releases"
+#     )
+#     files = models.JSONField(
+#         blank=True,
+#         null=True,
+#         help_text="Nested type information for this release",
+#         default=default_release_paths,
+#     )
+
+#     objects = ReleaseManager()
+
+#     def __str__(self):
+#         return f"{self.package.name} - {self.version}"
+
+#     class Meta:
+#         ordering = ["-release_date"]
+#         unique_together = (("package", "version"),)
+#         # Makes sure there is only one entry of a given version per package
 
 
 """

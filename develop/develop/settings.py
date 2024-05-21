@@ -151,3 +151,11 @@ STATIC_URL = "/static/"
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 
 CRISPY_TEMPLATE_PACK = "bootstrap5"
+
+DRM_PACKAGES = {
+    "basic": {"name": "Basic", "description": "Basic package"},
+    "advanced": {
+        "name": "Advanced",
+        "description": "Advanced package with more features",
+    },
+}
