@@ -1,0 +1,17 @@
+{% extends "releasemanager/base.html" %}
+
+{% block content %}
+  <h1>Releases for {{ package_key }}</h1>
+  {% if releases %}
+    <ul>
+    {% for release in releases %}
+      <li>
+        <strong>Version:</strong> {{ release.version }}<br>
+        <strong>Notes:</strong> {{ release.release_notes|default:"No notes available." }}
+      </li>
+    {% endfor %}
+    </ul>
+  {% else %}
+    <p>No releases found for this package.</p>
+  {% endif %}
+{% endblock %}

@@ -78,6 +78,29 @@ To add the "django-release-manager" package to your Django project, follow these
 
 ## How to use
 
+### Configuration
+
+The first step is to define your package in your settings.py file.
+
+```python
+# Django Release Manager Settings
+RM_PACKAGES = {
+    "basic": {"name": "Basic", "description": "Basic package"},
+    "advanced": {
+        "name": "Advanced",
+        "description": "Advanced package with more features",
+    },
+}
+```
+
+The packages themselves are defined in the settings rather than as a model for a couple reasons.
+
+- Simplicity: Defining packages directly in your settings is straightforward and can be easily accessed throughout your application without needing database queries.
+- Performance: Since the data is loaded into memory when the application starts, accessing this information is fast and doesn't involve the overhead of an extra database call.
+- Stability: Since the packages are not going to change often or only change with new releases of the application, keeping them in the settings makes it easier to manage through version control.
+
+### Usage in Templates
+
 This app stores information about your releases in the database and renders the URL to the files into your template using tags. You need to include the tag library in your template at the top of the page and then you can use it anywhere you want. Here is an example of how this would work on a page.
 
 Include this at the top of your template:
@@ -89,10 +112,10 @@ Include this at the top of your template:
 Now you can put this tag wherever is appropriate in your template:
 
 ```python
-{% release_packages "sample_app" user=user file_types="js" %}
+{% release_packages "basic" user=user file_types="js" %}
 ```
 
-In this example, we are managing a Package called 'sample_app' and we want to render the 'js' files. Controls for which version of the script to include is set in the Admin panel on the Release Manager record. What the example above will do is find the latest release version of the package, "sample_app", and render a link for all the "js" files included in the package.
+In this example, we are managing a Package called 'basic' and we want to render the 'js' files. Controls for which version of the script to include is set in the Admin panel on the Release Manager record. What the example above will do is find the latest release version of the package, "basic", and render a link for all the "js" files included in the package.
 
 How this all works behind the scenes will be explained in the next steps.
 
