@@ -1,9 +1,35 @@
-from rest_framework import generics
+from rest_framework.generics import ListAPIView, CreateAPIView, UpdateAPIView
+from rest_framework.permissions import IsAuthenticated
 
-# from releasemanager.models import SampleModel 
-# from releasemanager.api.serializers import SampleModelSerializer
+from releasemanager.models import Release
+from .serializers import ReleaseSerializer, ReleaseFileSerializer
 
 
-# class SampleModelListAPIView(generics.ListAPIView):
-#     queryset = SampleModel.objects.filter(enabled=True)
-#     serializer_class = SampleModelSerializer
+class ReleaseListView(ListAPIView):
+    queryset = Release.objects.all()
+    serializer_class = ReleaseSerializer
+    permission_classes = [
+        IsAuthenticated
+    ]  # Only authenticated users can access this endpoint
+
+
+class ReleaseCreateView(CreateAPIView):
+    queryset = Release.objects.all()
+    serializer_class = ReleaseSerializer
+    permission_classes = [
+        IsAuthenticated
+    ]  # Ensure only authenticated users can create a release
+
+    def perform_create(self, serializer):
+        # Additional logic before saving, if necessary
+        serializer.save(released_by=self.request.user)
+
+
+class ReleaseFileUpdateView(UpdateAPIView):
+    queryset = Release.objects.all()
+    serializer_class = ReleaseFileSerializer
+    permission_classes = [IsAuthenticated]  # Optionally, add more specific permissions
+    lookup_field = "pk"  # Use the primary key to identify the release to update
+
+    def patch(self, request, *args, **kwargs):
+        return self.partial_update(request, *args, **kwargs)

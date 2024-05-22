@@ -1,7 +1,13 @@
 from django.urls import path
 
-from releasemanager.api import views
+from .views import ReleaseListView, ReleaseCreateView, ReleaseFileUpdateView
 
 urlpatterns = [
-    # path('samplemodel/list/', views.SampleModelListAPIView.as_view(), name='sample-model-list'),
+    path("api/releases/", ReleaseListView.as_view(), name="api_releases"),
+    path("api/releases/new/", ReleaseCreateView.as_view(), name="api_create_release"),
+    path(
+        "api/releases/<int:pk>/update_files/",
+        ReleaseFileUpdateView.as_view(),
+        name="api_update_files",
+    ),
 ]

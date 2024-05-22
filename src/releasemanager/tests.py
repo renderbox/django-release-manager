@@ -1,4 +1,5 @@
 from django.test import TestCase
+from django.urls import reverse
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
 from django.conf import settings
@@ -6,6 +7,11 @@ from django.conf import settings
 from django.contrib.sites.models import Site
 from .models import Release, Status
 from django.utils import timezone
+
+from rest_framework.test import APIClient
+from rest_framework import status
+from rest_framework.test import APITestCase
+
 
 User = get_user_model()
 
@@ -87,3 +93,66 @@ class ReleaseGroupTestCase(TestCase):
             new_user, self.package_key
         )
         self.assertEqual(accessible_release, self.release1)
+
+
+class ReleaseAPITests(APITestCase):
+    def setUp(self):
+        # Create a user
+        self.user = User.objects.create_user(
+            username="testuser", password="testpass123"
+        )
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.user)
+
+        # Set up package data in settings
+        settings.RM_PACKAGES = {"test_package": {"name": "Test Package"}}
+
+        # URL for creating releases
+        self.create_release_url = reverse("api_create_release")
+
+        # URL for updating files in a release
+        self.update_files_url = lambda pk: reverse(
+            "api_update_files", kwargs={"pk": pk}
+        )
+
+        # Create a release to be updated
+        self.release = Release.objects.create(
+            package="test_package",
+            version="1.0",
+            release_date="2024-05-21T12:00:00Z",
+            status=Status.RELEASED,
+            release_notes="Initial release.",
+            files={},
+        )
+
+    def test_create_release(self):
+        """
+        Ensure we can create a new release object.
+        """
+        data = {
+            "package": "test_package",
+            "version": "1.1",
+            "release_date": "2024-05-22T12:00:00Z",
+            "status": Status.RELEASED,
+            "release_notes": "Added new features.",
+            "files": {"css": ["css/styles.css"]},
+            "signature": "signature123",
+        }
+        response = self.client.post(self.create_release_url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Release.objects.count(), 2)
+        self.assertEqual(
+            Release.objects.get(version="1.1").release_notes, "Added new features."
+        )
+
+    def test_update_release_files(self):
+        """
+        Ensure we can add files to the 'files' field of a release.
+        """
+        data = {"files": {"js": ["js/bob.js"]}}
+        response = self.client.patch(
+            self.update_files_url(self.release.pk), data, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        updated_release = Release.objects.get(pk=self.release.pk)
+        self.assertIn("js/bob.js", updated_release.files["js"])
