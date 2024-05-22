@@ -24,35 +24,33 @@ User = get_user_model()
 class ReleaseGroupTestCase(TestCase):
     fixtures = ["sample_user.json", "release_data.json"]
 
-    @classmethod
-    def setUpTestData(cls):
-        # Set up data for the whole TestCase
-        cls.user = User.objects.create_user(username="testuser", password="12345")
-        cls.site = Site.objects.create(domain="example.com", name="Example")
-        cls.group = Group.objects.create(name="Test Group")
-        cls.user.groups.add(cls.group)
-        cls.permission = Permission.objects.create(
+    def setUp(self):  # Set up data for the whole TestCase
+        self.user = User.objects.create_user(username="testuser", password="12345")
+        self.site = Site.objects.create(domain="example.com", name="Example")
+        self.group = Group.objects.create(name="Test Group")
+        self.user.groups.add(self.group)
+        self.permission = Permission.objects.create(
             codename="special_access", name="Can View Special Releases"
         )
-        cls.group.permissions.add(cls.permission)
+        self.group.permissions.add(self.permission)
 
-        cls.package_key = "test_package"
-        settings.RM_PACKAGES = {cls.package_key: {"name": "Test Package"}}
+        self.package_key = "test_package"
+        settings.RM_PACKAGES = {self.package_key: {"name": "Test Package"}}
 
-        cls.release1 = Release.objects.create(
-            package=cls.package_key,
+        self.release1 = Release.objects.create(
+            package=self.package_key,
             status=Status.RELEASED,
             version="1.0",
             release_date=timezone.now() - timezone.timedelta(days=1),
-            sites=[cls.site],
-            groups=[cls.group],
+            sites=[self.site],
+            groups=[self.group],
         )
-        cls.release2 = Release.objects.create(
-            package=cls.package_key,
+        self.release2 = Release.objects.create(
+            package=self.package_key,
             status=Status.DEVELOPMENT,
             version="2.0",
             release_date=timezone.now(),
-            sites=[cls.site],
+            sites=[self.site],
         )
 
     def test_get_accessible_release_with_permission(self):
