@@ -106,8 +106,8 @@ class Release(models.Model):
         ordering = ["-release_date"]
         unique_together = (("package", "version"),)
         permissions = [
-            ("can_view_development", "Can view development releases"),
-            ("can_view_testing", "Can view testing releases"),
+            ("can_access_development_release", "Can access development releases"),
+            ("can_access_test_release", "Can access testing releases"),
         ]
 
     def __str__(self):
