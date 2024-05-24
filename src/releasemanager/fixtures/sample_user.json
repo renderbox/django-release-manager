@@ -16,5 +16,23 @@
       "groups": [],
       "user_permissions": []
     }
+  },
+  {
+    "model": "core.releasemanageruser",
+    "pk": 2,
+    "fields": {
+      "password": "pbkdf2_sha256$390000$DBiMphJeKVW3sat81tP07d$Xw+f0fL8KWOFLnd5z+d3FTDgxp1HUkT3jUZrhhf+TI0=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "releaseuser",
+      "first_name": "",
+      "last_name": "",
+      "email": "",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2024-05-24T15:12:05Z",
+      "groups": [],
+      "user_permissions": [57, 58, 60]
+    }
   }
 ]
