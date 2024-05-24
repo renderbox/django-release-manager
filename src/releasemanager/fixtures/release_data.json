@@ -12,7 +12,7 @@
     "pk": 1,
     "fields": {
       "active": true,
-      "status": 1,
+      "status": 30,
       "version": "v0.1.0",
       "release_date": "2024-05-24T14:33:35Z",
       "deprecation_date": null,

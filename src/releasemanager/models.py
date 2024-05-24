@@ -14,7 +14,7 @@ class Status(models.IntegerChoices):
     DEVELOPMENT = 1, "Development"
     TESTING = 10, "Testing"
     HOLD = 20, "Hold"
-    RELEASED = 30, "Released"
+    RELEASED = 30, "Production"
     DEPRECATED = 40, "Deprecated"
 
 
@@ -94,6 +94,8 @@ class Release(models.Model):
         null=True,
         help_text="Digital signature for release integrity",
     )
+
+    objects = ReleaseManager()
 
     def get_package_details(self):
         """Retrieve the package details from settings based on the package identifier."""
