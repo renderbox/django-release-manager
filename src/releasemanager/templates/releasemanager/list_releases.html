@@ -1,0 +1,22 @@
+{% extends "releasemanager/base.html" %}
+
+{% block title %}Release Manager - Releases{% endblock title %}
+
+{% block content %}
+  <h1>Available Releases</h1>
+  {% if releases %}
+    <ul>
+      {% for release in releases %}
+        <li>
+          <strong>Version:</strong> {{ release.version }}
+          <br>
+          <strong>Status:</strong> {{ release.get_status_display }}
+          <br>
+          <strong>Notes:</strong> {{ release.release_notes|default:"No release notes available." }}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No releases available.</p>
+  {% endif %}
+{% endblock %}

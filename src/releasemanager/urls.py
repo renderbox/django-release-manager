@@ -4,9 +4,10 @@ from releasemanager import views
 
 urlpatterns = [
     path("", views.ReleaseManagerIndexView.as_view(), name="releasemanager_index"),
-    path(
-        "packages/<str:package_key>/",
-        views.PackageReleasesView.as_view(),
-        name="package_releases",
-    ),
+    # path(
+    #     "packages/<str:package_key>/",
+    #     views.PackageReleasesView.as_view(),
+    #     name="package_releases",
+    # ),
+    path("releases/", views.ReleaseListView.as_view(), name="list_releases"),
 ]

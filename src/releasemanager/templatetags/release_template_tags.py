@@ -19,9 +19,7 @@ def release_packages(package_key, user=None, release_state=None, file_types=None
         # Convert the comma seperated string into a list
 
     try:
-        release = Release.objects.get_latest_release_for_package_and_user(
-            package_key, user
-        )
+        release = Release.objects.get_accessible_releases(user, 1, package_key)
 
         # If there is still not a release available, return an empty list
         if release.count() == 0:
