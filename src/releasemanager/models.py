@@ -19,9 +19,9 @@ class Status(models.IntegerChoices):
 
 
 class ReleaseManager(models.Manager):
-    def get_accessible_releases(self, user, package_key):
-        current_site = get_current_site(user.request)
-        queryset = self.get_queryset().filter(package=package_key, sites=current_site)
+    def get_accessible_releases(self, user, site, package_key):
+        """Given a user, site & package key, return a queryset of releases that the user has access to."""
+        queryset = self.get_queryset().filter(package=package_key, sites=site)
 
         # Check if the user has specific permissions that grant them access to special versions
         if user.has_perm("release.special_access"):
@@ -37,8 +37,9 @@ class ReleaseManager(models.Manager):
         # If no group-specific or special permission releases are found, return the latest general release
         return queryset.filter(status=Status.RELEASED).order_by("-release_date")
 
-    def get_accessible_release(self, user, package_key):
-        return self.get_accessible_releases(user, package_key).first()
+    def get_accessible_release(self, user, site, package_key):
+        """Given a user, site & package key, return the most current release the user has access to."""
+        return self.get_accessible_releases(user, site, package_key).first()
 
 
 def default_release_paths():
