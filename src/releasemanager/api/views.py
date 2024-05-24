@@ -1,5 +1,5 @@
 from rest_framework.generics import ListAPIView, CreateAPIView, UpdateAPIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions
 
 from releasemanager.models import Release
 from .serializers import ReleaseSerializer, ReleaseFileSerializer
@@ -9,16 +9,16 @@ class ReleaseListView(ListAPIView):
     queryset = Release.objects.all()
     serializer_class = ReleaseSerializer
     permission_classes = [
-        IsAuthenticated
-    ]  # Only authenticated users can access this endpoint
+        IsAuthenticated  # Only authenticated users can access this endpoint
+    ]
 
 
 class ReleaseCreateView(CreateAPIView):
     queryset = Release.objects.all()
     serializer_class = ReleaseSerializer
     permission_classes = [
-        IsAuthenticated
-    ]  # Ensure only authenticated users can create a release
+        DjangoModelPermissions,  # Ensure only users with the correct permissions can create a release
+    ]
 
     def perform_create(self, serializer):
         # Additional logic before saving, if necessary

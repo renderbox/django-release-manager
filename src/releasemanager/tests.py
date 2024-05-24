@@ -95,11 +95,12 @@ class ReleaseAPITests(APITestCase):
         """
         Ensure we can create a new release object.
         """
+        # TODO: Should fail if the package key is not in the list of defined packages (aka, not a valid choice)
         data = {
             "package": "test_package",
             "version": "v1.1",
             "release_date": "2024-05-22T12:00:00Z",
-            "status": Status.RELEASED,
+            "status": Status.DEVELOPMENT,
             "release_notes": "Added new features.",
             "files": {"css": ["css/styles.css"]},
             "signature": "signature123",
@@ -112,6 +113,25 @@ class ReleaseAPITests(APITestCase):
         self.assertEqual(
             Release.objects.get(version="v1.1").release_notes, "Added new features."
         )
+
+    def test_sampleuser_can_not_create_release(self):
+        """
+        Ensure a user without permission can not create a new release object.
+        """
+
+        data = {
+            "package": "test_package",
+            "version": "v1.1",
+            "release_date": "2024-05-22T12:00:00Z",
+            "status": Status.DEVELOPMENT,
+            "release_notes": "Added new features.",
+            "files": {"css": ["css/styles.css"]},
+            "signature": "signature123",
+        }
+        # Set the user to the sample user
+        self.client.force_authenticate(user=self.sampleuser)
+        response = self.client.post(self.create_release_url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
 
 #     def test_releaseuser_update_release(self):
