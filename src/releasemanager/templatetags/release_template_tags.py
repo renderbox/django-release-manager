@@ -3,7 +3,7 @@ from django.contrib.sites.models import Site
 from django.db.models import Q
 from django.utils import timezone
 
-from releasemanager.models import Release, Package
+from releasemanager.models import Release
 
 register = template.Library()
 
@@ -34,5 +34,5 @@ def release_packages(package_key, user=None, release_state=None, file_types=None
             files = release.first().files  # Use all files if 'parts' is not specified
 
         return {"files": files}
-    except (Package.DoesNotExist, Release.DoesNotExist):
+    except Release.DoesNotExist:
         return {"files": []}

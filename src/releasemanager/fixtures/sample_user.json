@@ -3,8 +3,8 @@
     "model": "core.releasemanageruser",
     "pk": 1,
     "fields": {
-      "password": "pbkdf2_sha256$390000$NlenK5QkSuNeFXnKCwqyuB$XQSoPVZ0MJ2DRyYHlE9mk8+E3dU7XT4wLfq841WoYfM=",
-      "last_login": null,
+      "password": "pbkdf2_sha256$390000$fAOL1aCBWJJ7ZSLEot7kK1$pZ8rRUGBl6TnnFg+eMv8HHb5nvu86VaRbawEU+oSHv4=",
+      "last_login": "2024-05-24T14:28:56.016Z",
       "is_superuser": false,
       "username": "sampleuser",
       "first_name": "Sample",
@@ -12,7 +12,7 @@
       "email": "sampleuser@example.com",
       "is_staff": false,
       "is_active": true,
-      "date_joined": "2023-09-08T18:38:07.327Z",
+      "date_joined": "2024-05-24T14:28:22.802Z",
       "groups": [],
       "user_permissions": []
     }

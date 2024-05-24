@@ -10,7 +10,7 @@ from django.contrib.sites.shortcuts import get_current_site
 User = get_user_model()
 
 
-class Status(models.TextChoices):
+class Status(models.IntegerChoices):
     DEVELOPMENT = 1, "Development"
     TESTING = 10, "Testing"
     HOLD = 20, "Hold"

@@ -8,24 +8,17 @@
     }
   },
   {
-    "model": "releasemanager.package",
-    "pk": 1,
-    "fields": {
-      "name": "Sample App",
-      "package_key": "sample_app",
-      "description": "",
-      "created_at": "2023-09-07T19:06:11.014Z",
-      "updated_at": "2023-09-08T15:54:04.903Z"
-    }
-  },
-  {
     "model": "releasemanager.release",
     "pk": 1,
     "fields": {
       "active": true,
+      "status": 1,
       "version": "v0.1.0",
-      "release_date": "2023-09-07T19:06:25Z",
-      "package": 1,
+      "release_date": "2024-05-24T14:33:35Z",
+      "deprecation_date": null,
+      "released_by": 1,
+      "release_notes": "This is the first available release for testing.",
+      "package": "basic",
       "files": [
         {
           "file_type": "css",
@@ -38,7 +31,10 @@
             "integrity": "yes,lots"
           }
         }
-      ]
+      ],
+      "signature": null,
+      "groups": [],
+      "sites": [1]
     }
   },
   {
@@ -46,9 +42,13 @@
     "pk": 2,
     "fields": {
       "active": false,
+      "status": 1,
       "version": "v3.0.0",
-      "release_date": "2025-03-22T14:03:55Z",
-      "package": 1,
+      "release_date": "2024-05-24T14:43:57Z",
+      "deprecation_date": null,
+      "released_by": null,
+      "release_notes": "",
+      "package": "basic",
       "files": [
         {
           "file_type": "css",
@@ -61,7 +61,10 @@
             "integrity": "futureisbright!"
           }
         }
-      ]
+      ],
+      "signature": null,
+      "groups": [],
+      "sites": [1]
     }
   },
   {
@@ -69,9 +72,13 @@
     "pk": 3,
     "fields": {
       "active": false,
+      "status": 1,
       "version": "v0.1.1",
-      "release_date": "2023-09-08T15:53:51Z",
-      "package": 1,
+      "release_date": "2024-05-24T14:53:57Z",
+      "deprecation_date": null,
+      "released_by": null,
+      "release_notes": "",
+      "package": "basic",
       "files": [
         {
           "file_type": "css",
@@ -84,19 +91,10 @@
             "integrity": "yes,lots"
           }
         }
-      ]
-    }
-  },
-  {
-    "model": "releasemanager.releasegroup",
-    "pk": 1,
-    "fields": {
-      "name": "Sample App Beta",
-      "description": "Beta Testers across all sites.",
-      "active": true,
-      "members": [1],
-      "sites": [1],
-      "releases": [3, 1]
+      ],
+      "signature": null,
+      "groups": [],
+      "sites": [1]
     }
   }
 ]
