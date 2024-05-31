@@ -21,6 +21,22 @@ urlpatterns = [
     path("", include("core.urls")),
     path("admin/", admin.site.urls),
     path("accounts/", include("allauth.urls")),
-    path("releasemanager/", include("releasemanager.urls")),
-    path("api/v1/", include("releasemanager.api.urls")),
+    path(
+        "releasemanager/",
+        include(
+            (
+                "releasemanager.urls",
+                "releasemanager",
+            )
+        ),
+    ),
+    path(
+        "api/v1/",
+        include(
+            (
+                "releasemanager.api.urls",
+                "releasemanager_api",
+            )
+        ),
+    ),
 ]
