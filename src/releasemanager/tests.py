@@ -3,7 +3,8 @@ from django.test import TestCase
 # from django.urls import reverse
 from django.contrib.auth import get_user_model
 
-# from django.contrib.auth.models import Group, Permission
+from django.contrib.auth.models import Group
+
 # from django.conf import settings
 
 from django.contrib.sites.models import Site
@@ -41,30 +42,60 @@ class ReleaseGroupTestCase(TestCase):
         # a release user for testing API permissions
         self.releaseuser = User.objects.get(username="releaseuser")
 
-        # On site ID 1, the current release is 1.0
-        self.current_release = Release.objects.get(pk=1)
-        self.beta_release = Release.objects.get(pk=3)
+        # add the devuser to the test_group
+        self.test_group = Group.objects.get(name="test_group")
+        self.test_group.user_set.add(self.devuser)
 
     # What is the most current release the user can see
-    def test_get_accessible_release_without_permission(self):
-        # User without special access gets the latest released version
-        accessible_release = Release.objects.get_accessible_release(
-            self.sampleuser, self.site, self.package_key
+    def test_get_default_global_release(self):
+        """Test that a user without special access gets the latest released globally."""
+
+        site = Site.objects.get(pk=1)
+        release = Release.objects.get(pk=3)  # v0.1.1
+
+        accessible_release = (
+            Release.objects.get_latest_release_for_package_site_and_user(
+                self.sampleuser, site, self.package_key
+            )
         )
-        self.assertEqual(accessible_release, self.current_release)
+        self.assertEqual(accessible_release, release)
 
-    def test_get_accessible_release_with_permission(self):
-        # User with special access permission should get the latest release
-        accessible_release = Release.objects.get_accessible_release(
-            self.devuser, self.site, self.package_key
+    def test_get_default_site_release(self):
+        """Test that a user without special access gets the latest released on the site."""
+        site = Site.objects.get(pk=2)
+        release = Release.objects.get(pk=5)  # v0.1.2
+
+        accessible_release = (
+            Release.objects.get_latest_release_for_package_site_and_user(
+                self.sampleuser, site, self.package_key
+            )
         )
-        self.assertEqual(accessible_release, self.beta_release)
+        self.assertEqual(accessible_release, release)
 
-    # def test_devuser_has_permission_for_specific_package_version(self):
+    def test_get_dev_global_release(self):
+        """Test that a user with special access gets the latest development release that is only available on the site."""
+        site = Site.objects.get(pk=1)
+        release = Release.objects.get(pk=2)  # v3.0.0
 
-    # def test_sampleuser_fallback_to_general_release(self):
+        accessible_release = (
+            Release.objects.get_latest_release_for_package_site_and_user(
+                self.devuser, site, self.package_key
+            )
+        )
+        self.assertEqual(accessible_release, release)
 
-    # def test_newest_production_is_always_latest(self):
+    def test_get_dev_site_release(self):
+        """Test that a user with special access gets the latest development release that is available globally."""
+
+        site = Site.objects.get(pk=2)
+        release = Release.objects.get(pk=4)  # v2.0.0
+
+        accessible_release = (
+            Release.objects.get_latest_release_for_package_site_and_user(
+                self.devuser, site, self.package_key
+            )
+        )
+        self.assertEqual(accessible_release, release)
 
 
 class ReleaseAPITests(APITestCase):
@@ -83,9 +114,15 @@ class ReleaseAPITests(APITestCase):
         # a release user for testing API permissions
         self.releaseuser = User.objects.get(username="releaseuser")
 
-        # On site ID 1, the current release is 1.0
-        self.current_release = Release.objects.get(pk=1)
-        self.beta_release = Release.objects.get(pk=3)
+        # On site ID 1, the current release is v0.1.1
+        self.current_release = Release.objects.get(pk=3)
+
+        # On site ID 1, the most current test release is v3.0.0
+        self.beta_release = Release.objects.get(pk=2)
+
+        # add the devuser to the test_group
+        self.test_group = Group.objects.get(name="test_group")
+        self.test_group.user_set.add(self.devuser)
 
         self.create_release_url = "/api/v1/releases/create/"
 
@@ -109,7 +146,7 @@ class ReleaseAPITests(APITestCase):
         self.client.force_authenticate(user=self.releaseuser)
         response = self.client.post(self.create_release_url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Release.objects.count(), 4)
+        self.assertEqual(Release.objects.count(), 6)
         self.assertEqual(
             Release.objects.get(version="v1.1").release_notes, "Added new features."
         )
