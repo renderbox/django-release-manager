@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.db import models
 from django.db.models import Q
+from django.utils import timezone
 
 # get User from the custom user model
 from django.contrib.auth import get_user_model
@@ -21,49 +22,66 @@ class Status(models.IntegerChoices):
 
 class ReleaseManager(models.Manager):
     def get_accessible_releases(self, user, site, package):
-        """Given a user, site & package key, return a queryset of releases that the user has access to."""
+        """Given a user, site & package key, return a queryset of releases that the user has access to.
 
-        # Only get the ueer's groups that have the special permissions
+        it will:
+        - Get all releases for the package available on the site
+        - Filter out releases that are not active
+        - Filter out releases that are not for the user's group
+        - Pickup both global releases and site-specific releases
+        """
+
+        # Only get the user's groups that have the special permissions
         user_groups = user.groups.filter(
             permissions__codename__in=[
-                "can_access_test_release",
+                "can_test_releases",
             ]
         ).distinct()
 
-        # Get all releases for the package available to a site
-        # This will pickup global releases and site-specific releases
-        # If the release is group-specific, it will only be available to those groups
-        releases = (
-            self.get_queryset()
-            .filter(
-                (Q(sites=site) | Q(sites__isnull=True))
-                & (Q(groups__in=user_groups) | Q(groups__isnull=True)),
-                package=package,
-                active=True,
+        # If the user is a member of any groups with testing permission, return the latest testing release
+        if user_groups.exists():
+            # If the release is group-specific, it will only be available to those groups
+            releases = (
+                self.get_queryset()
+                .filter(
+                    (Q(sites=site) | Q(sites__isnull=True))
+                    & (Q(groups__in=user_groups) | Q(groups__isnull=True)),
+                    package=package,
+                    active=True,
+                )
+                .distinct()
             )
-            .distinct()
-        )
-
-        # # Otherwise, filter the releases to those where the user's groups match
-        # group_ids = user.groups.values_list("id", flat=True)
-        # releases = queryset.filter(groups__id__in=group_ids).distinct()
-
-        # if releases.exists():
-        #     return releases.order_by("-release_date")
-
-        # # If no group-specific or special permission releases are found, return the latest general release
-        # return queryset.filter(status=Status.RELEASED).order_by("-release_date")
+        else:  # If the user is not a member of any groups with testing permission, return the latest general release
+            releases = (
+                self.get_queryset()
+                .filter(
+                    Q(sites=site) | Q(sites__isnull=True),
+                    package=package,
+                    active=True,
+                    status=Status.RELEASED,
+                )
+                .distinct()
+            )
 
         return releases
 
     def get_latest_release_for_package_site_and_user(self, user, site, package):
         """Given a user, site & package key, return the most current release the user has access to."""
-        return self.get_accessible_releases(user, site, package).first()
-        # need to ingore any releases past the deprecation date
+        # Get the current time
+        current_datetime = timezone.now()
+
+        return (
+            self.get_accessible_releases(user, site, package)
+            .filter(  # ingore any releases past its deprecation date
+                Q(deprecation_date__gte=current_datetime)
+                | Q(deprecation_date__isnull=True)
+            )
+            .first()
+        )
 
 
 def default_release_paths():
-    return list([{"file_type": "css"}, {"file_type": "js"}])
+    return list([{"file_group": "css"}, {"file_group": "js"}])
 
 
 class Release(models.Model):

@@ -29,11 +29,11 @@
       "package": "basic",
       "files": [
         {
-          "file_type": "css",
+          "file_group": "css",
           "path": "/static/css/v0.1.0/main.css"
         },
         {
-          "file_type": "js",
+          "file_group": "js",
           "path": "/static/js/v0.1.0/main.js",
           "options": {
             "integrity": "yes,lots"
@@ -59,11 +59,11 @@
       "package": "basic",
       "files": [
         {
-          "file_type": "css",
+          "file_group": "css",
           "path": "/static/css/v3.0.0/main.css"
         },
         {
-          "file_type": "js",
+          "file_group": "js",
           "path": "/static/js/v3.0.0/main.js",
           "options": {
             "integrity": "futureisbright!"
@@ -89,11 +89,11 @@
       "package": "basic",
       "files": [
         {
-          "file_type": "css",
+          "file_group": "css",
           "path": "/static/css/v0.1.1/main.css"
         },
         {
-          "file_type": "js",
+          "file_group": "js",
           "path": "/static/js/v0.1.1/main.js",
           "options": {
             "integrity": "yes,lots"
@@ -119,10 +119,10 @@
       "package": "basic",
       "files": [
         {
-          "file_type": "css"
+          "file_group": "css"
         },
         {
-          "file_type": "js"
+          "file_group": "js"
         }
       ],
       "signature": null,
