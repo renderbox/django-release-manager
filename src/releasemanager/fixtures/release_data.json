@@ -1,100 +1,141 @@
 [
-  {
+{
     "model": "sites.site",
     "pk": 1,
     "fields": {
-      "domain": "example.com",
-      "name": "example.com"
+        "domain": "example.com",
+        "name": "example.com"
     }
-  },
-  {
+},
+{
+    "model": "sites.site",
+    "pk": 2,
+    "fields": {
+        "domain": "Second",
+        "name": "secondsite.com"
+    }
+},
+{
     "model": "releasemanager.release",
     "pk": 1,
     "fields": {
-      "active": true,
-      "status": 30,
-      "version": "v0.1.0",
-      "release_date": "2024-05-24T14:33:35Z",
-      "deprecation_date": null,
-      "released_by": 1,
-      "release_notes": "This is the first available release for testing.",
-      "package": "basic",
-      "files": [
-        {
-          "file_type": "css",
-          "path": "/static/css/v0.1.0/main.css"
-        },
-        {
-          "file_type": "js",
-          "path": "/static/js/v0.1.0/main.js",
-          "options": {
-            "integrity": "yes,lots"
-          }
-        }
-      ],
-      "signature": null,
-      "groups": [],
-      "sites": [1]
+        "active": true,
+        "status": 30,
+        "version": "v0.1.0",
+        "release_date": "2024-05-24T14:33:35Z",
+        "deprecation_date": null,
+        "released_by": 1,
+        "release_notes": "This is the first available release for testing.",
+        "package": "basic",
+        "files": [
+            {
+                "file_type": "css",
+                "path": "/static/css/v0.1.0/main.css"
+            },
+            {
+                "file_type": "js",
+                "path": "/static/js/v0.1.0/main.js",
+                "options": {
+                    "integrity": "yes,lots"
+                }
+            }
+        ],
+        "signature": null,
+        "groups": [],
+        "sites": [
+            1
+        ]
     }
-  },
-  {
+},
+{
     "model": "releasemanager.release",
     "pk": 2,
     "fields": {
-      "active": false,
-      "status": 1,
-      "version": "v3.0.0",
-      "release_date": "2024-05-24T14:43:57Z",
-      "deprecation_date": null,
-      "released_by": null,
-      "release_notes": "",
-      "package": "basic",
-      "files": [
-        {
-          "file_type": "css",
-          "path": "/static/css/v3.0.0/main.css"
-        },
-        {
-          "file_type": "js",
-          "path": "/static/js/v3.0.0/main.js",
-          "options": {
-            "integrity": "futureisbright!"
-          }
-        }
-      ],
-      "signature": null,
-      "groups": [],
-      "sites": [1]
+        "active": true,
+        "status": 1,
+        "version": "v3.0.0",
+        "release_date": "2024-05-24T14:43:57Z",
+        "deprecation_date": null,
+        "released_by": null,
+        "release_notes": "Development release only available to site_id 1",
+        "package": "basic",
+        "files": [
+            {
+                "file_type": "css",
+                "path": "/static/css/v3.0.0/main.css"
+            },
+            {
+                "file_type": "js",
+                "path": "/static/js/v3.0.0/main.js",
+                "options": {
+                    "integrity": "futureisbright!"
+                }
+            }
+        ],
+        "signature": null,
+        "groups": [],
+        "sites": [
+            1
+        ]
     }
-  },
-  {
+},
+{
     "model": "releasemanager.release",
     "pk": 3,
     "fields": {
-      "active": false,
-      "status": 1,
-      "version": "v0.1.1",
-      "release_date": "2024-05-24T14:53:57Z",
-      "deprecation_date": null,
-      "released_by": null,
-      "release_notes": "",
-      "package": "basic",
-      "files": [
-        {
-          "file_type": "css",
-          "path": "/static/css/v0.1.1/main.css"
-        },
-        {
-          "file_type": "js",
-          "path": "/static/js/v0.1.1/main.js",
-          "options": {
-            "integrity": "yes,lots"
-          }
-        }
-      ],
-      "signature": null,
-      "groups": [],
-      "sites": [1]
+        "active": true,
+        "status": 30,
+        "version": "v0.1.1",
+        "release_date": "2024-05-24T14:53:57Z",
+        "deprecation_date": null,
+        "released_by": null,
+        "release_notes": "Default Production Release",
+        "package": "basic",
+        "files": [
+            {
+                "file_type": "css",
+                "path": "/static/css/v0.1.1/main.css"
+            },
+            {
+                "file_type": "js",
+                "path": "/static/js/v0.1.1/main.js",
+                "options": {
+                    "integrity": "yes,lots"
+                }
+            }
+        ],
+        "signature": null,
+        "groups": [],
+        "sites": [
+            1
+        ]
     }
-  }
+},
+{
+    "model": "releasemanager.release",
+    "pk": 4,
+    "fields": {
+        "active": true,
+        "status": 1,
+        "version": "v2.0",
+        "release_date": "2024-06-03T14:26:34Z",
+        "deprecation_date": null,
+        "released_by": 3,
+        "release_notes": "Development Release only available to members of the beta_group",
+        "package": "basic",
+        "files": [
+            {
+                "file_type": "css"
+            },
+            {
+                "file_type": "js"
+            }
+        ],
+        "signature": null,
+        "groups": [
+            1
+        ],
+        "sites": []
+    }
+}
 ]
