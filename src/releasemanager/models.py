@@ -19,15 +19,6 @@ class Status(models.IntegerChoices):
     DEPRECATED = 40, "Deprecated"
 
 
-"""
-from releasemanager.models import Release
-from django.contrib.auth import get_user_model
-User = get_user_model()
-user = User.objects.first()
-Release.objects.get_accessible_releases( user,1,"basic")
-"""
-
-
 class ReleaseManager(models.Manager):
     def get_accessible_releases(self, user, site, package):
         """Given a user, site & package key, return a queryset of releases that the user has access to."""
@@ -137,7 +128,7 @@ class Release(models.Model):
         ordering = ["-version"]
         unique_together = (("package", "version"),)
         permissions = [
-            ("can_access_test_release", "Can access testing releases"),
+            ("can_test_releases", "Can access testing releases"),
         ]
 
     def __str__(self):
@@ -163,4 +154,13 @@ current_site = Site.objects.get_current()
 user = User.objects.first()
 
 Release.objects.get_latest_release_for_package_and_user(package, user)
+"""
+
+
+"""
+from releasemanager.models import Release
+from django.contrib.auth import get_user_model
+User = get_user_model()
+user = User.objects.first()
+Release.objects.get_accessible_releases( user,1,"basic")
 """
