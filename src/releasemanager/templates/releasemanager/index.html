@@ -4,4 +4,8 @@
 
 {% block content %}
 <h1>Release Manager Base HTML Template</h1>
+
+<p>This is the base template for the Release Manager application. It provides a common layout for all pages in the application.</p>
+Current Releases: <a href="{% url 'releasemanager:list_releases' %}">List Releases</a>
+
 {% endblock content %}

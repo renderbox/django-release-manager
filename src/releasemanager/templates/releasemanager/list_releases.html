@@ -1,0 +1,25 @@
+{% extends "releasemanager/base.html" %}
+
+{% block title %}Release Manager - Releases{% endblock title %}
+
+{% block content %}
+  <h1>Release Notes</h1>
+  {% if releases %}
+    <ul>
+      {% for release in releases %}
+        <li>
+          <strong>Version:</strong> {{ release.version }}
+          {% if release.get_status_display == "Production" %} <span class="badge text-bg-primary">
+            {% elif release.get_status_display == "Development" %} <span class="badge text-bg-danger">
+              {% else %} <span class="badge text-bg-warning">
+            {% endif %}
+            {{ release.get_status_display }}</span>
+          <br>
+          <strong>Notes:</strong> {{ release.release_notes|default:"No release notes available." }}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No releases available.</p>
+  {% endif %}
+{% endblock %}

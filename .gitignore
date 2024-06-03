@@ -108,3 +108,4 @@ build_notes.txt
 # VSCode config
 .vscode
 *.bak
+*/db.sqlite3.*

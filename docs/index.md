@@ -112,14 +112,14 @@ Include this at the top of your template:
 Now you can put this tag wherever is appropriate in your template:
 
 ```python
-{% release_packages "basic" user=user file_types="js" %}
+{% release_packages "basic" user=user file_group="js" %}
 ```
 
 In this example, we are managing a Package called 'basic' and we want to render the 'js' files. Controls for which version of the script to include is set in the Admin panel on the Release Manager record. What the example above will do is find the latest release version of the package, "basic", and render a link for all the "js" files included in the package.
 
 How this all works behind the scenes will be explained in the next steps.
 
-> **Note:** There can only be one package specified in a tag at a time but there can be multiple file_types in a comman seperated list like: "js,css,img" for example.
+> **Note:** There can only be one package specified in a tag at a time but there can be multiple file_group in a comman seperated list like: "js,css,img" for example.
 
 ### Admin Interfaces
 
@@ -135,12 +135,12 @@ A release is a versioned collection of files associated with the Package. Releas
 - **Version**: This is arbitrary but required. It does not enforce a specific scheme so it's flexible to match whatever works on your project.
 - **Release date**: This, combined with the Active state, determines what Release of the package is considered the current production version. The release who's Active _and_ has the most recent release date (but not in the future) wins. Using a future date/time is helpful if you want to schedule the roll out os a package.
 - **Package**: Which package this release is for.
-- **Files**: A JSON formatted list of the files included in the release. These files will be rendered in the order they are included in in the list. In the example below you can see there is a "file_type", which is used by the tag to determine which files to include in the tag render. Options are a nested JSON object that contains optional "HTML tag" attributes to include when rendering the template tag. In this example the "js" file includes an "integrity" attribute that will be added to the HTML and assigned the associated value.
+- **Files**: A JSON formatted list of the files included in the release. These files will be rendered in the order they are included in in the list. In the example below you can see there is a "file_group", which is used by the tag to determine which files to include in the tag render. Options are a nested JSON object that contains optional "HTML tag" attributes to include when rendering the template tag. In this example the "js" file includes an "integrity" attribute that will be added to the HTML and assigned the associated value.
 
 ```json
 [
-  { "file_type": "css", "path": "/static/css/v3.0.0/main.css" },
-  { "file_type": "js", "path": "/static/js/v3.0.0/main.js", "options": { "integrity": "futureisbright!" } }
+  { "file_group": "css", "path": "/static/css/v3.0.0/main.css" },
+  { "file_group": "js", "path": "/static/js/v3.0.0/main.js", "options": { "integrity": "futureisbright!" } }
 ]
 ```
 

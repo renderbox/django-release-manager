@@ -1,5 +1,7 @@
 from django.conf import settings
 from django.db import models
+from django.db.models import Q
+from django.utils import timezone
 
 # get User from the custom user model
 from django.contrib.auth import get_user_model
@@ -19,31 +21,67 @@ class Status(models.IntegerChoices):
 
 
 class ReleaseManager(models.Manager):
-    def get_accessible_releases(self, user, site, package_key):
-        """Given a user, site & package key, return a queryset of releases that the user has access to."""
-        queryset = self.get_queryset().filter(package=package_key, sites=site)
+    def get_accessible_releases(self, user, site, package):
+        """Given a user, site & package key, return a queryset of releases that the user has access to.
 
-        # Check if the user has specific permissions that grant them access to special versions
-        if user.has_perm("release.special_access"):
-            return queryset.order_by("-release_date")
+        it will:
+        - Get all releases for the package available on the site
+        - Filter out releases that are not active
+        - Filter out releases that are not for the user's group
+        - Pickup both global releases and site-specific releases
+        """
 
-        # Otherwise, filter the releases to those where the user's groups match
-        group_ids = user.groups.values_list("id", flat=True)
-        releases = queryset.filter(groups__id__in=group_ids).distinct()
+        # Only get the user's groups that have the special permissions
+        user_groups = user.groups.filter(
+            permissions__codename__in=[
+                "can_test_releases",
+            ]
+        ).distinct()
 
-        if releases.exists():
-            return releases.order_by("-release_date")
+        # If the user is a member of any groups with testing permission, return the latest testing release
+        if user_groups.exists():
+            # If the release is group-specific, it will only be available to those groups
+            releases = (
+                self.get_queryset()
+                .filter(
+                    (Q(sites=site) | Q(sites__isnull=True))
+                    & (Q(groups__in=user_groups) | Q(groups__isnull=True)),
+                    package=package,
+                    active=True,
+                )
+                .distinct()
+            )
+        else:  # If the user is not a member of any groups with testing permission, return the latest general release
+            releases = (
+                self.get_queryset()
+                .filter(
+                    Q(sites=site) | Q(sites__isnull=True),
+                    package=package,
+                    active=True,
+                    status=Status.RELEASED,
+                )
+                .distinct()
+            )
 
-        # If no group-specific or special permission releases are found, return the latest general release
-        return queryset.filter(status=Status.RELEASED).order_by("-release_date")
+        return releases
 
-    def get_accessible_release(self, user, site, package_key):
+    def get_latest_release_for_package_site_and_user(self, user, site, package):
         """Given a user, site & package key, return the most current release the user has access to."""
-        return self.get_accessible_releases(user, site, package_key).first()
+        # Get the current time
+        current_datetime = timezone.now()
+
+        return (
+            self.get_accessible_releases(user, site, package)
+            .filter(  # ingore any releases past its deprecation date
+                Q(deprecation_date__gte=current_datetime)
+                | Q(deprecation_date__isnull=True)
+            )
+            .first()
+        )
 
 
 def default_release_paths():
-    return list([{"file_type": "css"}, {"file_type": "js"}])
+    return list([{"file_group": "css"}, {"file_group": "js"}])
 
 
 class Release(models.Model):
@@ -81,7 +119,9 @@ class Release(models.Model):
         Group, blank=True, help_text="User groups that can access this release"
     )
     sites = models.ManyToManyField(
-        Site, blank=True, help_text="Sites where this release is available"
+        Site,
+        blank=True,
+        help_text="Sites where this release is isolated to.  If empty, it is available globally.",
     )
     files = models.JSONField(
         blank=True,
@@ -103,11 +143,10 @@ class Release(models.Model):
         return settings.RM_PACKAGES.get(self.package)
 
     class Meta:
-        ordering = ["-release_date"]
+        ordering = ["-version"]
         unique_together = (("package", "version"),)
         permissions = [
-            ("can_view_development", "Can view development releases"),
-            ("can_view_testing", "Can view testing releases"),
+            ("can_test_releases", "Can access testing releases"),
         ]
 
     def __str__(self):
@@ -128,9 +167,18 @@ from releasemanager.models import Release, Package
 
 User = get_user_model()
 
-package_key = "sample_app"
+package = "sample_app"
 current_site = Site.objects.get_current()
 user = User.objects.first()
 
-Release.objects.get_latest_release_for_package_and_user(package_key, user)
+Release.objects.get_latest_release_for_package_and_user(package, user)
+"""
+
+
+"""
+from releasemanager.models import Release
+from django.contrib.auth import get_user_model
+User = get_user_model()
+user = User.objects.first()
+Release.objects.get_accessible_releases( user,1,"basic")
 """

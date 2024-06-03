@@ -1,14 +1,19 @@
 from django.test import TestCase
-from django.urls import reverse
+
+# from django.urls import reverse
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Group, Permission
-from django.conf import settings
+
+from django.contrib.auth.models import Group
+
+# from django.conf import settings
 
 from django.contrib.sites.models import Site
-from .models import Release, Status
-from django.utils import timezone
 
-from rest_framework.test import APIClient
+from .models import Release, Status
+
+# from django.utils import timezone
+
+# from rest_framework.test import APIClient
 from rest_framework import status
 from rest_framework.test import APITestCase
 
@@ -22,7 +27,7 @@ User = get_user_model()
 
 
 class ReleaseGroupTestCase(TestCase):
-    fixtures = ["sample_user.json", "release_data.json"]  # ,
+    fixtures = ["sample_user.json", "release_data.json"]
 
     def setUp(self):  # Set up data for the whole TestCase
         self.package_key = "basic"  # the name of the test package
@@ -37,105 +42,136 @@ class ReleaseGroupTestCase(TestCase):
         # a release user for testing API permissions
         self.releaseuser = User.objects.get(username="releaseuser")
 
-        # On site ID 1, the current release is 1.0
-        self.current_release = Release.objects.get(pk=1)
-        self.beta_release = Release.objects.get(pk=3)
+        # add the devuser to the test_group
+        self.test_group = Group.objects.get(name="test_group")
+        self.test_group.user_set.add(self.devuser)
 
     # What is the most current release the user can see
-    def test_get_accessible_release_without_permission(self):
-        # User without special access gets the latest released version
-        accessible_release = Release.objects.get_accessible_release(
-            self.sampleuser, self.site, self.package_key
+    def test_get_default_global_release(self):
+        """Test that a user without special access gets the latest released globally."""
+
+        site = Site.objects.get(pk=1)
+        release = Release.objects.get(pk=3)  # v0.1.1
+
+        accessible_release = (
+            Release.objects.get_latest_release_for_package_site_and_user(
+                self.sampleuser, site, self.package_key
+            )
         )
-        self.assertEqual(accessible_release, self.current_release)
+        self.assertEqual(accessible_release, release)
 
-    def test_get_accessible_release_with_permission(self):
-        # User with special access permission should get the latest release
-        accessible_release = Release.objects.get_accessible_release(
-            self.devuser, self.site, self.package_key
+    def test_get_default_site_release(self):
+        """Test that a user without special access gets the latest released on the site."""
+        site = Site.objects.get(pk=2)
+        release = Release.objects.get(pk=5)  # v0.1.2
+
+        accessible_release = (
+            Release.objects.get_latest_release_for_package_site_and_user(
+                self.sampleuser, site, self.package_key
+            )
         )
-        self.assertEqual(accessible_release, self.beta_release)
+        self.assertEqual(accessible_release, release)
 
-    # def test_sampleuser_has_permission_to_view_beta_on_site(self):
-    #     # Test that the user has the correct permissions
-    #     self.assertTrue(self.sampleuser.has_perm("releasemanager.can_view_releases"))
+    def test_get_dev_global_release(self):
+        """Test that a user with special access gets the latest development release that is only available on the site."""
+        site = Site.objects.get(pk=1)
+        release = Release.objects.get(pk=2)  # v3.0.0
 
-    # def test_get_accessible_releases_no_group_match(self):
-    #     # Create a release that does not match user's group
-    #     Release.objects.create(
-    #         package=self.package_key,
-    #         status=Status.TESTING,
-    #         version="3.0",
-    #         release_date=timezone.now(),
-    #         sites=[self.site],
-    #     )
-    #     # User should still fall back to the latest released version
-    #     accessible_releases = Release.objects.get_accessible_releases(
-    #         self.sampleuser, self.package_key
-    #     )
-    #     self.assertIn(self.release1, list(accessible_releases))
-    #     self.assertNotIn(self.release2, list(accessible_releases))
+        accessible_release = (
+            Release.objects.get_latest_release_for_package_site_and_user(
+                self.devuser, site, self.package_key
+            )
+        )
+        self.assertEqual(accessible_release, release)
 
-    # def test_fallback_to_general_release(self):
-    #     # Test that it falls back to the latest general release
-    #     new_user = User.objects.create_user(username="newuser", password="12345")
-    #     accessible_release = Release.objects.get_accessible_release(
-    #         new_user, self.package_key
-    #     )
-    #     self.assertEqual(accessible_release, self.release1)
+    def test_get_dev_site_release(self):
+        """Test that a user with special access gets the latest development release that is available globally."""
+
+        site = Site.objects.get(pk=2)
+        release = Release.objects.get(pk=4)  # v2.0.0
+
+        accessible_release = (
+            Release.objects.get_latest_release_for_package_site_and_user(
+                self.devuser, site, self.package_key
+            )
+        )
+        self.assertEqual(accessible_release, release)
 
 
-# class ReleaseAPITests(APITestCase):
-#     def setUp(self):
-#         # Create a user
-#         self.sampleuser = User.objects.create_user(
-#             username="testuser", password="testpass123"
-#         )
-#         self.client = APIClient()
-#         self.client.force_authenticate(user=self.sampleuser)
+class ReleaseAPITests(APITestCase):
+    fixtures = ["sample_user.json", "release_data.json"]
 
-#         # Set up package data in settings
-#         settings.RM_PACKAGES = {"test_package": {"name": "Test Package"}}
+    def setUp(self):  # Set up data for the whole TestCase
+        self.package_key = "basic"  # the name of the test package
+        self.site = Site.objects.get_current()
 
-#         # URL for creating releases
-#         self.create_release_url = reverse("api_create_release")
+        # an average user for testing permissions
+        self.sampleuser = User.objects.get(username="sampleuser")
 
-#         # URL for updating files in a release
-#         self.update_files_url = lambda pk: reverse(
-#             "api_update_files", kwargs={"pk": pk}
-#         )
+        # a developer user for testing permissions
+        self.devuser = User.objects.get(username="devuser")
 
-#         # Create a release to be updated
-#         self.release = Release.objects.create(
-#             package="test_package",
-#             version="1.0",
-#             release_date="2024-05-21T12:00:00Z",
-#             status=Status.RELEASED,
-#             release_notes="Initial release.",
-#             files={},
-#         )
+        # a release user for testing API permissions
+        self.releaseuser = User.objects.get(username="releaseuser")
 
-#     def test_create_release(self):
-#         """
-#         Ensure we can create a new release object.
-#         """
-#         data = {
-#             "package": "test_package",
-#             "version": "1.1",
-#             "release_date": "2024-05-22T12:00:00Z",
-#             "status": Status.RELEASED,
-#             "release_notes": "Added new features.",
-#             "files": {"css": ["css/styles.css"]},
-#             "signature": "signature123",
-#         }
-#         response = self.client.post(self.create_release_url, data, format="json")
-#         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-#         self.assertEqual(Release.objects.count(), 2)
-#         self.assertEqual(
-#             Release.objects.get(version="1.1").release_notes, "Added new features."
-#         )
+        # On site ID 1, the current release is v0.1.1
+        self.current_release = Release.objects.get(pk=3)
 
-#     def test_update_release_files(self):
+        # On site ID 1, the most current test release is v3.0.0
+        self.beta_release = Release.objects.get(pk=2)
+
+        # add the devuser to the test_group
+        self.test_group = Group.objects.get(name="test_group")
+        self.test_group.user_set.add(self.devuser)
+
+        self.create_release_url = "/api/v1/releases/create/"
+
+    # def test_releaseuser_can_not_delete_release(self):
+
+    def test_releaseuser_create_release(self):
+        """
+        Ensure we can create a new release object.
+        """
+        # TODO: Should fail if the package key is not in the list of defined packages (aka, not a valid choice)
+        data = {
+            "package": "test_package",
+            "version": "v1.1",
+            "release_date": "2024-05-22T12:00:00Z",
+            "status": Status.DEVELOPMENT,
+            "release_notes": "Added new features.",
+            "files": {"css": ["css/styles.css"]},
+            "signature": "signature123",
+        }
+        # Set the user to the release user
+        self.client.force_authenticate(user=self.releaseuser)
+        response = self.client.post(self.create_release_url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Release.objects.count(), 6)
+        self.assertEqual(
+            Release.objects.get(version="v1.1").release_notes, "Added new features."
+        )
+
+    def test_sampleuser_can_not_create_release(self):
+        """
+        Ensure a user without permission can not create a new release object.
+        """
+
+        data = {
+            "package": "test_package",
+            "version": "v1.1",
+            "release_date": "2024-05-22T12:00:00Z",
+            "status": Status.DEVELOPMENT,
+            "release_notes": "Added new features.",
+            "files": {"css": ["css/styles.css"]},
+            "signature": "signature123",
+        }
+        # Set the user to the sample user
+        self.client.force_authenticate(user=self.sampleuser)
+        response = self.client.post(self.create_release_url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+#     def test_releaseuser_update_release(self):
 #         """
 #         Ensure we can add files to the 'files' field of a release.
 #         """
