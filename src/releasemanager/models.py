@@ -3,6 +3,8 @@ from django.db import models
 from django.db.models import Q
 from django.utils import timezone
 
+# from distutils.version import LooseVersion
+
 # get User from the custom user model
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
@@ -79,6 +81,21 @@ class ReleaseManager(models.Manager):
             .first()
         )
 
+        # Get all releases for the package available on the site
+
+        # releases = list(
+        #     self.get_accessible_releases(
+        #         user, site, package
+        #     ).filter(  # ingore any releases past its deprecation date
+        #         Q(deprecation_date__gte=current_datetime)
+        #         | Q(deprecation_date__isnull=True)
+        #     )
+        # )
+        # releases.sort(
+        #     key=lambda x: LooseVersion(x.name)
+        # )  # sort the releases by version number using symanic versioning
+        # return releases[0] if releases else None
+
 
 def default_release_paths():
     return list([{"file_group": "css"}, {"file_group": "js"}])
@@ -93,7 +110,7 @@ class Release(models.Model):
         default=Status.DEVELOPMENT,
         help_text="Current status of the release",
     )
-    version = models.CharField(max_length=20)
+    name = models.CharField(max_length=20)
     release_date = models.DateTimeField()
     deprecation_date = models.DateTimeField(
         blank=True,
@@ -105,7 +122,7 @@ class Release(models.Model):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        help_text="User who released the version",
+        help_text="User who created the release",
     )
     release_notes = models.TextField(
         blank=True, help_text="Detailed notes about what is new, changed, or fixed"
@@ -143,15 +160,16 @@ class Release(models.Model):
         return settings.RM_PACKAGES.get(self.package)
 
     class Meta:
-        ordering = ["-version"]
-        unique_together = (("package", "version"),)
+        # ordering = ["-name"]
+        ordering = ["-release_date"]    # sort the releases by release date rather than name number since it's more reliable
+        unique_together = (("package", "name"),)
         permissions = [
             ("can_test_releases", "Can access testing releases"),
         ]
 
     def __str__(self):
         package_details = self.get_package_details()
-        return f"{package_details['name']} - {self.version}"
+        return f"{package_details['name']} - {self.name}"
 
 
 """
