@@ -3,8 +3,6 @@ from django.db import models
 from django.db.models import Q
 from django.utils import timezone
 
-# from distutils.version import LooseVersion
-
 # get User from the custom user model
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
@@ -80,21 +78,6 @@ class ReleaseManager(models.Manager):
             )
             .first()
         )
-
-        # Get all releases for the package available on the site
-
-        # releases = list(
-        #     self.get_accessible_releases(
-        #         user, site, package
-        #     ).filter(  # ingore any releases past its deprecation date
-        #         Q(deprecation_date__gte=current_datetime)
-        #         | Q(deprecation_date__isnull=True)
-        #     )
-        # )
-        # releases.sort(
-        #     key=lambda x: LooseVersion(x.name)
-        # )  # sort the releases by version number using symanic versioning
-        # return releases[0] if releases else None
 
 
 def default_release_paths():
