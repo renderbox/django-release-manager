@@ -31,6 +31,13 @@ class ReleaseManager(models.Manager):
         - Pickup both global releases and site-specific releases
         """
 
+        # Instead of using user.has_perm("releasemanager.can_test_releases") a query to check if a release is
+        # exclusive, a query for a group can handle double duty.
+
+        # If the user is a superuser, return all releases available on the site
+        if user.is_superuser:
+            return self.get_queryset().filter((Q(sites=site) | Q(sites__isnull=True)), package=package, active=True)
+
         # Only get the user's groups that have the special permissions
         user_groups = user.groups.filter(
             permissions__codename__in=[
@@ -38,30 +45,25 @@ class ReleaseManager(models.Manager):
             ]
         ).distinct()
 
-        # If the user is a member of any groups with testing permission, return the latest testing release
-        if user_groups.exists():
-            # If the release is group-specific, it will only be available to those groups
-            releases = (
+        now = timezone.now()
+
+        releases = (
                 self.get_queryset()
                 .filter(
                     (Q(sites=site) | Q(sites__isnull=True))
-                    & (Q(groups__in=user_groups) | Q(groups__isnull=True)),
-                    package=package,
-                    active=True,
+                    & (Q(deprecation_date__gt=now) | Q(deprecation_date__isnull=True)), # ignore any releases past its deprecation date
+                    package=package,    # get the package
+                    active=True,    # get only active releases
+                    release_date__lte = now,
                 )
-                .distinct()
             )
-        else:  # If the user is not a member of any groups with testing permission, return the latest general release
-            releases = (
-                self.get_queryset()
-                .filter(
-                    Q(sites=site) | Q(sites__isnull=True),
-                    package=package,
-                    active=True,
-                    status=Status.RELEASED,
-                )
-                .distinct()
-            )
+
+        # If the user is a member of any groups with testing permission, return the latest testing release.  Otherwise,
+        # return the latest production release not locked to a group.
+        if user_groups.exists():
+            releases = releases.filter(Q(groups__in=user_groups) | Q(groups__isnull=True)).distinct()   # get the latest testing release
+        else:
+            releases = releases.filter(Q(groups__isnull=True), status=Status.RELEASED).distinct()   # get the latest production release not locked to a group
 
         return releases
 
@@ -76,7 +78,7 @@ class ReleaseManager(models.Manager):
                 Q(deprecation_date__gte=current_datetime)
                 | Q(deprecation_date__isnull=True)
             )
-            .first()
+            .first()    # get the latest release
         )
 
 
@@ -93,7 +95,7 @@ class Release(models.Model):
         default=Status.DEVELOPMENT,
         help_text="Current status of the release",
     )
-    version = models.CharField(max_length=20)
+    name = models.CharField(max_length=20)
     release_date = models.DateTimeField()
     deprecation_date = models.DateTimeField(
         blank=True,
@@ -105,7 +107,7 @@ class Release(models.Model):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        help_text="User who released the version",
+        help_text="User who created the release",
     )
     release_notes = models.TextField(
         blank=True, help_text="Detailed notes about what is new, changed, or fixed"
@@ -143,15 +145,16 @@ class Release(models.Model):
         return settings.RM_PACKAGES.get(self.package)
 
     class Meta:
-        ordering = ["-version"]
-        unique_together = (("package", "version"),)
+        # ordering = ["-name"]
+        ordering = ["-release_date"]    # sort the releases by release date rather than name number since it's more reliable
+        unique_together = (("package", "name"),)
         permissions = [
             ("can_test_releases", "Can access testing releases"),
         ]
 
     def __str__(self):
         package_details = self.get_package_details()
-        return f"{package_details['name']} - {self.version}"
+        return f"{package_details['name']} - {self.name}"
 
 
 """

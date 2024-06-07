@@ -160,3 +160,5 @@ RM_PACKAGES = {
         "description": "Advanced package with more features",
     },
 }
+
+# RM_URL = STATIC_URL # default behavior is to use the STATIC_URL

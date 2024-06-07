@@ -8,8 +8,8 @@ from .models import Release
 
 
 class ReleaseAdmin(admin.ModelAdmin):
-    list_display = ("package", "version", "release_date", "active")
-    search_fields = ("package__name", "version")
+    list_display = ("package", "name", "release_date", "active")
+    search_fields = ("package__name", "name")
 
 
 admin.site.register(Release, ReleaseAdmin)

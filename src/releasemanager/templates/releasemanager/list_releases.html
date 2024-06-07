@@ -8,7 +8,7 @@
     <ul>
       {% for release in releases %}
         <li>
-          <strong>Version:</strong> {{ release.version }}
+          <strong>Release:</strong> {{ release.name }}
           {% if release.get_status_display == "Production" %} <span class="badge text-bg-primary">
             {% elif release.get_status_display == "Development" %} <span class="badge text-bg-danger">
               {% else %} <span class="badge text-bg-warning">
