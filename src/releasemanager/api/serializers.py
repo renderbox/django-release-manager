@@ -11,7 +11,7 @@ from releasemanager.models import Release
 class ReleaseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Release
-        fields = ["version", "release_notes", "release_date", "status"]
+        fields = ["name", "release_notes", "release_date", "status"]
 
 
 class ReleaseFileSerializer(serializers.ModelSerializer):

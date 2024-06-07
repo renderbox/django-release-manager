@@ -135,7 +135,7 @@ class ReleaseAPITests(APITestCase):
         # TODO: Should fail if the package key is not in the list of defined packages (aka, not a valid choice)
         data = {
             "package": "test_package",
-            "version": "v1.1",
+            "name": "v1.1",
             "release_date": "2024-05-22T12:00:00Z",
             "status": Status.DEVELOPMENT,
             "release_notes": "Added new features.",
@@ -148,7 +148,7 @@ class ReleaseAPITests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Release.objects.count(), 6)
         self.assertEqual(
-            Release.objects.get(version="v1.1").release_notes, "Added new features."
+            Release.objects.get(name="v1.1").release_notes, "Added new features."
         )
 
     def test_sampleuser_can_not_create_release(self):
@@ -158,7 +158,7 @@ class ReleaseAPITests(APITestCase):
 
         data = {
             "package": "test_package",
-            "version": "v1.1",
+            "name": "v1.1",
             "release_date": "2024-05-22T12:00:00Z",
             "status": Status.DEVELOPMENT,
             "release_notes": "Added new features.",
