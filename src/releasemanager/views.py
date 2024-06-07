@@ -41,6 +41,6 @@ class ReleaseListView(LoginRequiredMixin, TemplateView):
         # Fetch all accessible releases for the current user
         releases = Release.objects.get_accessible_releases(
             user, site, "basic"
-        ).order_by("-name")
+        )
         context["releases"] = releases
         return context

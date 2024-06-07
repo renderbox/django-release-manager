@@ -31,6 +31,13 @@ class ReleaseManager(models.Manager):
         - Pickup both global releases and site-specific releases
         """
 
+        # Instead of using user.has_perm("releasemanager.can_test_releases") a query to check if a release is
+        # exclusive, a query for a group can handle double duty.
+
+        # If the user is a superuser, return all releases available on the site
+        if user.is_superuser:
+            return self.get_queryset().filter((Q(sites=site) | Q(sites__isnull=True)), package=package, active=True)
+
         # Only get the user's groups that have the special permissions
         user_groups = user.groups.filter(
             permissions__codename__in=[
@@ -76,7 +83,7 @@ class ReleaseManager(models.Manager):
                 Q(deprecation_date__gte=current_datetime)
                 | Q(deprecation_date__isnull=True)
             )
-            .first()
+            .first()    # get the latest release
         )
 
 
