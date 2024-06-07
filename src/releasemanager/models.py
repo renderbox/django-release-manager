@@ -47,35 +47,23 @@ class ReleaseManager(models.Manager):
 
         now = timezone.now()
 
-        # If the user is a member of any groups with testing permission, return the latest testing release
+        releases = (
+                self.get_queryset()
+                .filter(
+                    (Q(sites=site) | Q(sites__isnull=True))
+                    & (Q(deprecation_date__gt=now) | Q(deprecation_date__isnull=True)), # ignore any releases past its deprecation date
+                    package=package,    # get the package
+                    active=True,    # get only active releases
+                    release_date__lte = now,
+                )
+            )
+
+        # If the user is a member of any groups with testing permission, return the latest testing release.  Otherwise,
+        # return the latest production release not locked to a group.
         if user_groups.exists():
-            # If the release is group-specific, it will only be available to those groups
-            releases = (
-                self.get_queryset()
-                .filter(
-                    (Q(sites=site) | Q(sites__isnull=True))
-                    & (Q(groups__in=user_groups) | Q(groups__isnull=True))
-                    & (Q(deprecation_date__gt=now) | Q(deprecation_date__isnull=True)),
-                    package=package,
-                    active=True,
-                    # add a filter for release date and deprecation date
-                    release_date__lte = now,
-                )
-                .distinct()
-            )
-        else:  # If the user is not a member of any groups with testing permission, return the latest general release
-            releases = (
-                self.get_queryset()
-                .filter(
-                    (Q(sites=site) | Q(sites__isnull=True))
-                    & (Q(deprecation_date__gt=now) | Q(deprecation_date__isnull=True)),
-                    package=package,
-                    active=True,
-                    status=Status.RELEASED,
-                    release_date__lte = now,
-                )
-                .distinct()
-            )
+            releases = releases.filter(Q(groups__in=user_groups) | Q(groups__isnull=True)).distinct()   # get the latest testing release
+        else:
+            releases = releases.filter(Q(groups__isnull=True), status=Status.RELEASED).distinct()   # get the latest production release not locked to a group
 
         return releases
 
