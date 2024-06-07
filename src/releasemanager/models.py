@@ -45,6 +45,8 @@ class ReleaseManager(models.Manager):
             ]
         ).distinct()
 
+        now = timezone.now()
+
         # If the user is a member of any groups with testing permission, return the latest testing release
         if user_groups.exists():
             # If the release is group-specific, it will only be available to those groups
@@ -52,9 +54,12 @@ class ReleaseManager(models.Manager):
                 self.get_queryset()
                 .filter(
                     (Q(sites=site) | Q(sites__isnull=True))
-                    & (Q(groups__in=user_groups) | Q(groups__isnull=True)),
+                    & (Q(groups__in=user_groups) | Q(groups__isnull=True))
+                    & (Q(deprecation_date__gt=now) | Q(deprecation_date__isnull=True)),
                     package=package,
                     active=True,
+                    # add a filter for release date and deprecation date
+                    release_date__lte = now,
                 )
                 .distinct()
             )
@@ -62,10 +67,12 @@ class ReleaseManager(models.Manager):
             releases = (
                 self.get_queryset()
                 .filter(
-                    Q(sites=site) | Q(sites__isnull=True),
+                    (Q(sites=site) | Q(sites__isnull=True))
+                    & (Q(deprecation_date__gt=now) | Q(deprecation_date__isnull=True)),
                     package=package,
                     active=True,
                     status=Status.RELEASED,
+                    release_date__lte = now,
                 )
                 .distinct()
             )
