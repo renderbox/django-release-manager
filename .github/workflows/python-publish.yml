@@ -40,7 +40,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: pypi
-      # url: https://pypi.org/p/django-release-manager
+      url: https://pypi.org/p/django-release-manager
     permissions:
       id-token: write # IMPORTANT: mandatory for trusted publishing
 
@@ -52,6 +52,9 @@ jobs:
           path: dist/
       - name: Publish distribution 📦 to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: __token__
+          password: ${{ secrets.pypi_password }}
 
   github-release:
     name: >-
@@ -119,3 +122,5 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           repository-url: https://test.pypi.org/legacy/
+          user: __token__
+          password: ${{ secrets.pypi_password }}
