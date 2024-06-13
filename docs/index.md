@@ -182,13 +182,13 @@ A release is a versioned collection of files associated with the Package. Releas
 
 ### Overriding the template
 
-The template used be the tag is completely customizeable. It is found here:
+The template used be the tag works in a very standard way but is also completely customizeable. It is found here:
 
 ```bash
 templates/releasemanager/release_template.html
 ```
 
-Take a look at what is there and if you want to add functionality or change formatting for your particular use, feel free. The version that comes with Django Release Manager assumes that the paths to the package files will be absolute paths so an example of customization might be to add Django's "{% static ... %}" tag to the template if you are keeping versions in the standard static location.
+Take a look at what is there and if you want to add functionality or change formatting for your particular use, feel free. The version that comes with Django Release Manager assumes that the paths to the package files will be absolute paths so an example of customization might be to add a custom tag that should be there on every render of the script tag.
 
 ## TODOs
 
@@ -196,7 +196,10 @@ This is still a works in progress but its completely useable currently.
 
 There are many things still to be done.
 
-- REST API
+- Complete REST API
+- Management command for registering new releases
+- Session based version selection
+- Current version in API response headers (useful for letting a SPA know a new version is available and it should update itself)
 - Tools for A/B testing
 
 If there is a feature you want to request feel free to file an issue with the subject starting with "REQUEST: " or better yet, write it your self and make a pull request.
