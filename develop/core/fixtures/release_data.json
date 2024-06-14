@@ -27,19 +27,21 @@
       "released_by": 1,
       "release_notes": "This is the first available release for testing.",
       "package": "basic",
-      "files": [
-        {
-          "file_group": "css",
-          "path": "/static/css/v0.1.0/main.css"
-        },
-        {
-          "file_group": "js",
-          "path": "/static/js/v0.1.0/main.js",
-          "options": {
-            "integrity": "yes,lots"
+      "files": {
+        "css": [
+          {
+            "path": "/static/css/v0.1.0/main.css"
           }
-        }
-      ],
+        ],
+        "js": [
+          {
+            "path": "/static/js/v0.1.0/main.js",
+            "options": {
+              "integrity": "yes,lots"
+            }
+          }
+        ]
+      },
       "signature": null,
       "groups": [],
       "sites": [1]
@@ -57,19 +59,21 @@
       "released_by": null,
       "release_notes": "Development release only available to site_id 1",
       "package": "basic",
-      "files": [
-        {
-          "file_group": "css",
-          "path": "/static/css/v3.0.0/main.css"
-        },
-        {
-          "file_group": "js",
-          "path": "/static/js/v3.0.0/main.js",
-          "options": {
-            "integrity": "futureisbright!"
+      "files": {
+        "css": [
+          {
+            "path": "/static/css/v3.0.0/main.css"
           }
-        }
-      ],
+        ],
+        "js": [
+          {
+            "path": "/static/js/v3.0.0/main.js",
+            "options": {
+              "integrity": "futureisbright!"
+            }
+          }
+        ]
+      },
       "signature": null,
       "groups": [],
       "sites": [1]
@@ -87,19 +91,21 @@
       "released_by": null,
       "release_notes": "Default Production Release",
       "package": "basic",
-      "files": [
-        {
-          "file_group": "css",
-          "path": "/static/css/v0.1.1/main.css"
-        },
-        {
-          "file_group": "js",
-          "path": "/static/js/v0.1.1/main.js",
-          "options": {
-            "integrity": "yes,lots"
+      "files": {
+        "css": [
+          {
+            "path": "/static/css/v0.1.1/main.css"
           }
-        }
-      ],
+        ],
+        "js": [
+          {
+            "path": "/static/js/v0.1.1/main.js",
+            "options": {
+              "integrity": "yes,lots"
+            }
+          }
+        ]
+      },
       "signature": null,
       "groups": [],
       "sites": [1]
@@ -117,14 +123,7 @@
       "released_by": 3,
       "release_notes": "Development Release only available to members of the beta_group",
       "package": "basic",
-      "files": [
-        {
-          "file_group": "css"
-        },
-        {
-          "file_group": "js"
-        }
-      ],
+      "files": {},
       "signature": null,
       "groups": [1],
       "sites": [2]
@@ -142,14 +141,7 @@
       "released_by": null,
       "release_notes": "v0.1.2 which is only available on the \"second\" site.",
       "package": "basic",
-      "files": [
-        {
-          "file_group": "css"
-        },
-        {
-          "file_group": "js"
-        }
-      ],
+      "files": {},
       "signature": null,
       "groups": [],
       "sites": [2]
