@@ -36,7 +36,9 @@ class ReleaseManager(models.Manager):
 
         # If the user is a superuser, return all releases available on the site
         if user.is_superuser:
-            return self.get_queryset().filter((Q(sites=site) | Q(sites__isnull=True)), package=package, active=True)
+            return self.get_queryset().filter(
+                (Q(sites=site) | Q(sites__isnull=True)), package=package, active=True
+            )
 
         # Only get the user's groups that have the special permissions
         user_groups = user.groups.filter(
@@ -47,23 +49,26 @@ class ReleaseManager(models.Manager):
 
         now = timezone.now()
 
-        releases = (
-                self.get_queryset()
-                .filter(
-                    (Q(sites=site) | Q(sites__isnull=True))
-                    & (Q(deprecation_date__gt=now) | Q(deprecation_date__isnull=True)), # ignore any releases past its deprecation date
-                    package=package,    # get the package
-                    active=True,    # get only active releases
-                    release_date__lte = now,
-                )
-            )
+        releases = self.get_queryset().filter(
+            (Q(sites=site) | Q(sites__isnull=True))
+            & (
+                Q(deprecation_date__gt=now) | Q(deprecation_date__isnull=True)
+            ),  # ignore any releases past its deprecation date
+            package=package,  # get the package
+            active=True,  # get only active releases
+            release_date__lte=now,
+        )
 
         # If the user is a member of any groups with testing permission, return the latest testing release.  Otherwise,
         # return the latest production release not locked to a group.
         if user_groups.exists():
-            releases = releases.filter(Q(groups__in=user_groups) | Q(groups__isnull=True)).distinct()   # get the latest testing release
+            releases = releases.filter(
+                Q(groups__in=user_groups) | Q(groups__isnull=True)
+            ).distinct()  # get the latest testing release
         else:
-            releases = releases.filter(Q(groups__isnull=True), status=Status.RELEASED).distinct()   # get the latest production release not locked to a group
+            releases = releases.filter(
+                Q(groups__isnull=True), status=Status.RELEASED
+            ).distinct()  # get the latest production release not locked to a group
 
         return releases
 
@@ -78,12 +83,12 @@ class ReleaseManager(models.Manager):
                 Q(deprecation_date__gte=current_datetime)
                 | Q(deprecation_date__isnull=True)
             )
-            .first()    # get the latest release
+            .first()  # get the latest release
         )
 
 
 def default_release_paths():
-    return list([{"file_group": "css"}, {"file_group": "js"}])
+    return dict()
 
 
 class Release(models.Model):
@@ -96,7 +101,7 @@ class Release(models.Model):
         help_text="Current status of the release",
     )
     name = models.CharField(max_length=20)
-    release_date = models.DateTimeField()
+    release_date = models.DateTimeField(null=True, blank=True)
     deprecation_date = models.DateTimeField(
         blank=True,
         null=True,
@@ -146,7 +151,9 @@ class Release(models.Model):
 
     class Meta:
         # ordering = ["-name"]
-        ordering = ["-release_date"]    # sort the releases by release date rather than name number since it's more reliable
+        ordering = [
+            "-release_date"
+        ]  # sort the releases by release date rather than name number since it's more reliable
         unique_together = (("package", "name"),)
         permissions = [
             ("can_test_releases", "Can access testing releases"),
