@@ -101,7 +101,7 @@ class Release(models.Model):
         help_text="Current status of the release",
     )
     name = models.CharField(max_length=20)
-    release_date = models.DateTimeField()
+    release_date = models.DateTimeField(null=True, blank=True)
     deprecation_date = models.DateTimeField(
         blank=True,
         null=True,
